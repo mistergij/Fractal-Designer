@@ -40,12 +40,10 @@
 
           python = nixpkgs-python.packages.${system}.${pythonVersion};
           pythonldlibpath = lib.makeLibraryPath (with pkgs; [
-            zlib zstd stdenv.cc.cc curl openssl attr libssh bzip2 libxml2 acl libsodium util-linux xz systemd kdePackages.qtwayland stdenv.cc.cc.lib
+            zlib zstd stdenv.cc.cc curl openssl attr libssh bzip2 libxml2 acl libsodium util-linux xz systemd kdePackages.qtwayland stdenv.cc.cc.lib libGL libxkbcommon fontconfig xorg.libX11 glib freetype dbus kdePackages.wayland
           ]);
 
           env = (python.withPackages (python-pkgs: with python-pkgs; [
-            matplotlib
-            numpy
             pytest
             setuptools
             wheel
@@ -87,15 +85,15 @@
             shellHook = ''
               export PS1='\n\[\e[1;32m\][\[\e]0;\u@\h: \w\a\]\u@\h:\w]\[\e[91;1m\]$(__git_ps1 " (%s)")\[\e[0;35m\] (lab-5) \[\e[97;1m\]\$\[\e[0m\] '
               virtualenv --no-setuptools $venvDir
-              export PATH=$PWD/venv/bin:$PATH
-              export PYTHONPATH=$PWD/$venvDir/${python.sitePackages}:$PYTHONPATH
-              export QT_DEBUG_PLUGINS=1
-              export QT_QPA_PLATFORM_PLUGIN_PATH="${pkgs.kdePackages.qtwayland}/lib/qt-6/plugins/platforms"
-              export QT_PLUGIN_PATH="${pkgs.kdePackages.qtwayland}/lib/qt-6/plugins}"
             '';
             postShellHook = ''
               ln -sf PYTHONPATH/* $venvDir/lib/python${pythonVersion}/site-packages
             '';
+            PATH="$PWD/bin:$PATH";
+            PYTHONPATH="$PWD/$venvDir/${python.sitePackages}:$PYTHONPATH";
+            QT_PLUGIN_PATH="${pkgs.kdePackages.qtwayland}/lib/qt-6/plugins}";
+            QT_QPA_PLATFORM_PLUGIN_PATH="${pkgs.kdePackages.qtwayland}/lib/qt-6/plugins/platforms";
+            LD_LIBRARY_PATH = "${pythonldlibpath}";
           };
     });
 }

@@ -1,0 +1,11 @@
+# https://numtide.github.io/devshell
+[[commands]]
+package = "gcc"
+[[commands]]
+package = "libffi"
+[[commands]]
+package = "openssl"
+[[commands]]
+package = "ruff"
+[[commands]]
+package = "unzip"
