@@ -16,13 +16,11 @@ class MainWindow(QMainWindow):
         file_menu = menu.addMenu("File")
         menu.addMenu(file_menu)
 
-        # Define and add exit action on non-MacOS systems
-        if sys.platform != "darwin":
-            exit_action = QAction("Exit", self)
-            exit_action.setShortcut(QKeySequence.Quit)
-            exit_action.triggered.connect(self.close)
-            
-            file_menu.addAction(exit_action)
+        exit_action = QAction("Exit", self)
+        exit_action.setShortcut(QKeySequence.StandardKey.Quit)
+        exit_action.triggered.connect(self.close)
+
+        file_menu.addAction(exit_action)
 
 
 app = QApplication(sys.argv)
