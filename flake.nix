@@ -40,7 +40,7 @@
 
           python = nixpkgs-python.packages.${system}.${pythonVersion};
           pythonldlibpath = lib.makeLibraryPath (with pkgs; [
-            zlib zstd stdenv.cc.cc curl openssl attr libssh bzip2 libxml2 acl libsodium util-linux xz systemd kdePackages.qtwayland stdenv.cc.cc.lib libGL libxkbcommon fontconfig xorg.libX11 glib freetype dbus kdePackages.wayland libxcb-cursor.dev libxcb llvm
+            zlib zstd stdenv.cc.cc curl openssl attr libssh bzip2 libxml2 acl libsodium util-linux xz systemd kdePackages.qtwayland stdenv.cc.cc.lib libGL libxkbcommon fontconfig xorg.libX11 glib freetype dbus kdePackages.wayland libxcb-cursor.dev libxcb llvm xorg.xcbutilwm xorg.xcbutil xorg.xcbutilimage xorg.xcbutilrenderutil xorg.libXinerama xorg.xcbutilkeysyms
           ]);
 
           env = (python.withPackages (python-pkgs: with python-pkgs; [
