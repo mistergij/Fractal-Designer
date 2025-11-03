@@ -1,7 +1,5 @@
-import sys
-
 from PySide6.QtGui import QAction, QKeySequence, QPainter
-from PySide6.QtWidgets import QApplication, QMainWindow, QMenuBar
+from PySide6.QtWidgets import QMainWindow
 
 
 class MainWindow(QMainWindow):
@@ -21,10 +19,3 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.close)
 
         file_menu.addAction(exit_action)
-
-
-app = QApplication(sys.argv)
-window = MainWindow()
-window.show()
-
-app.exec()
