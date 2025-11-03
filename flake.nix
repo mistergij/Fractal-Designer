@@ -69,6 +69,7 @@
               kdePackages.qtwayland
               libffi
               openssl
+              qtcreator
               ruff
               unzip
               uv
