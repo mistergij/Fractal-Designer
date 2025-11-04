@@ -6,7 +6,8 @@ from PySide6.QtGui import (
 from PySide6.QtWidgets import QMenu
 
 from fractal_designer.mixins.transformer import TransformerMixin
-from fractal_designer.menu_window.menus import MenuWindow
+from fractal_designer.windows.menu import MenuWindow
+from fractal_designer.windows.fractal import FractalWindow
 
 
 def add_actions(actions: list[QAction], menu: QMenu):
@@ -21,3 +22,14 @@ class MainWindow(TransformerMixin, MenuWindow):
 
         # Set title
         self.setWindowTitle("Transformations")
+
+        self.fractal = FractalWindow()
+
+        for name, action in self.actions.items():
+            if name == "Exit":
+                action.triggered.connect(self.close)
+            elif name == "Fractal":
+                action.triggered.connect(lambda checked: self.toggle_fractal(self.fractal))
+
+    def toggle_fractal(self, window):
+        window.hide() if self.fractal.isVisible() else window.show()
