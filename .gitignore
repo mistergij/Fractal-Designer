@@ -3,3 +3,4 @@
 .envrc
 *.iml
 *.xml
+__pycache__/*
