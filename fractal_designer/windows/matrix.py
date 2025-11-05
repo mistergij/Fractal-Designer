@@ -13,7 +13,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QGridLayout, QLabel, QMainWindow, QWidget
 
-from fractal_designer.mixins.transformer import TransformerMixin
+from fractal_designer.mixins.transformer import Transformer
 
 
 class MatrixWidget(QWidget):
