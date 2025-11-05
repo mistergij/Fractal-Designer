@@ -39,7 +39,7 @@ class FractalWindow(TransformerMixin, QMainWindow):
         min_width = self.label.minimumWidth()
         min_height = self.label.minimumHeight()
 
-        self.setMinimumSize(min_width+200, min_height+200)
+        self.setMinimumSize(min_width + 200, min_height + 200)
 
         self.setCentralWidget(self.label)
 
@@ -75,7 +75,6 @@ class FractalWindow(TransformerMixin, QMainWindow):
         if self.do_draw:
             painter.drawPath(self.path)
             self.label.setPixmap(self.pixmap)
-
 
     @Slot()
     def draw(self):

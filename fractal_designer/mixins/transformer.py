@@ -1,7 +1,7 @@
 import numpy as np
 
 from fractal_designer.IFS import IFS
-from fractal_designer.types import assert_transformation_shape, Float64NDArray
+from fractal_designer.custom_types import assert_transformation_shape, Float64NDArray
 
 
 class TransformerMixin:

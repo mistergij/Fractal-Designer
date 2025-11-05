@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QMainWindow
 
 
 class MenuWindow(QMainWindow):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
         self.actions: dict[str, QAction] = {}
