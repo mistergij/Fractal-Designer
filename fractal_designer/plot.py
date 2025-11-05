@@ -1,6 +1,6 @@
 import matplotlib
-from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
 import numpy as np
 
 matplotlib.use('qtagg')
@@ -14,34 +14,20 @@ matrix_3 = np.array([[0.5, 0, 0.5], [0, 0.5, 0.5], [0, 0, 1]])
 
 ifs = [matrix_1, matrix_2, matrix_3]
 
-bottom_left = np.array([0, 0, 1]).T
-top_right = np.array([1, 1, 1]).T
+polygon = np.array([[0, 0, 1], [0, 1, 1], [1, 1, 1], [1, 0, 1]]).T
 
-past_lefts = [bottom_left]
-past_rights = [top_right]
-next_lefts = []
-next_rights = []
+old_polygons = [polygon]
+new_polygons = []
 
 for i in range(1, 10):
-    next_lefts = []
-    next_rights = []
-    for point in past_lefts:
+    new_polygons = []
+    for polygon in old_polygons:
         for matrix in ifs:
-            next_lefts.append(matrix @ point)
+            new_polygons.append(matrix @ polygon)
+    
+    old_polygons = new_polygons
 
-    for point in past_rights:
-        for matrix in ifs:
-            next_rights.append(matrix @ point)
-
-    past_lefts = next_lefts
-    past_rights = next_rights
-
-sizes = []
-
-for left, right in zip(next_lefts, next_rights):
-    left = left[0:2]
-    right = right[0:2]
-    size = right - left
-    ax.add_patch(Rectangle(left, size[0], size[1]))
+for polygon in new_polygons:
+    ax.add_patch(Polygon(polygon[0:2, :].T, closed=True))
 
 plt.show()
