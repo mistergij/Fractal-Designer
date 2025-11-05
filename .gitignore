@@ -4,3 +4,4 @@
 *.iml
 *.xml
 __pycache__/*
+.idea/vcs.xml
