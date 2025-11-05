@@ -1,5 +1,9 @@
+import matplotlib
+from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
 import numpy as np
+
+matplotlib.use('qtagg')
 
 fig = plt.figure()
 ax = fig.add_subplot()
@@ -18,7 +22,7 @@ past_rights = [top_right]
 next_lefts = []
 next_rights = []
 
-for i in range(1, 6):
+for i in range(1, 10):
     next_lefts = []
     next_rights = []
     for point in past_lefts:
@@ -38,6 +42,6 @@ for left, right in zip(next_lefts, next_rights):
     left = left[0:2]
     right = right[0:2]
     size = right - left
-    ax.add_patch(plt.Rectangle(left, size[0], size[1]))
+    ax.add_patch(Rectangle(left, size[0], size[1]))
 
 plt.show()
