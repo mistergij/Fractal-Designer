@@ -8,11 +8,11 @@ class Transformer(ABC):
     def __init__(self):
         self.transformation_matrices: list[Float64NDArray] = []
         self.polygons = []
-        
+
     def add_transformation(self, ifs: IFS) -> None:
         ifs_array = assert_transformation_shape(ifs.IFS, (3, 3))
         self.transformation_matrices.append(ifs_array)
-        
+
     @abstractmethod
     def apply_transformation(self, shape_to_transform, num_iterations: int) -> list[Float64NDArray]:
         raise NotImplementedError

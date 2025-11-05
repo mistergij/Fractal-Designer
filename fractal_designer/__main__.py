@@ -2,7 +2,7 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from fractal_designer.graphics import MainWindow
+from fractal_designer.windows.home import MainWindow
 
 if __name__ == "__main__":
     app = QApplication.instance()

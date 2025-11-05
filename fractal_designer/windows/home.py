@@ -5,7 +5,6 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QMenu
 
-from fractal_designer.mixins.transformer import Transformer
 from fractal_designer.windows.menu import MenuWindow
 from fractal_designer.windows.fractal import FractalWindow
 
@@ -15,7 +14,7 @@ def add_actions(actions: list[QAction], menu: QMenu):
         menu.addAction(action)
 
 
-class MainWindow(Transformer, MenuWindow):
+class MainWindow(MenuWindow):
     @override
     def __init__(self, parent=None):
         super().__init__(parent)
