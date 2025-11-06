@@ -26,7 +26,7 @@ class MainWindow(MenuWindow):
         self.fractal = FractalWindow()
         self.matrix = MatrixWindow()
 
-        for name, action in self.actions.items():
+        for name, action in self.actions_dict.items():
             if name == "Exit":
                 action.triggered.connect(self.close)
             elif name == "Fractal":

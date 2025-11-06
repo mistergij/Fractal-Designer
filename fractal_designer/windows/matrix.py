@@ -8,7 +8,7 @@ class MatrixWidget(QWidget):
 
         table = QTableWidget(2, 2, parent)
 
-        layout = QVBoxLayout(parent)
+        layout = QVBoxLayout(parent) if parent else QVBoxLayout()
 
         self.setLayout(layout)
 

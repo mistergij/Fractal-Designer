@@ -6,7 +6,7 @@ class MenuWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.actions: dict[str, QAction] = {}
+        self.actions_dict: dict[str, QAction] = {}
 
         menu_bar = self.menuBar()
 
@@ -16,7 +16,7 @@ class MenuWindow(QMainWindow):
         exit_action.setShortcut(QKeySequence.StandardKey.Quit)
         # exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
-        self.actions["Exit"] = exit_action
+        self.actions_dict["Exit"] = exit_action
 
         menu_bar.addMenu(file_menu)
 
@@ -24,10 +24,10 @@ class MenuWindow(QMainWindow):
 
         open_matrix_window = QAction("Matrix", self)
         view_menu.addAction(open_matrix_window)
-        self.actions["Matrix"] = open_matrix_window
+        self.actions_dict["Matrix"] = open_matrix_window
 
         open_fractal_window = QAction("Fractal", self)
         view_menu.addAction(open_fractal_window)
-        self.actions["Fractal"] = open_fractal_window
+        self.actions_dict["Fractal"] = open_fractal_window
 
         menu_bar.addMenu(view_menu)
