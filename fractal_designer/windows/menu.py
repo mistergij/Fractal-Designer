@@ -22,6 +22,10 @@ class MenuWindow(QMainWindow):
 
         view_menu = menu_bar.addMenu("View")
 
+        open_matrix_window = QAction("Matrix", self)
+        view_menu.addAction(open_matrix_window)
+        self.actions["Matrix"] = open_matrix_window
+
         open_fractal_window = QAction("Fractal", self)
         view_menu.addAction(open_fractal_window)
         self.actions["Fractal"] = open_fractal_window

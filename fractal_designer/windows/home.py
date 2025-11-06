@@ -5,6 +5,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtWidgets import QMenu
 
+from fractal_designer.windows.matrix import MatrixWindow
 from fractal_designer.windows.menu import MenuWindow
 from fractal_designer.windows.fractal import FractalWindow
 
@@ -23,12 +24,28 @@ class MainWindow(MenuWindow):
         self.setWindowTitle("Transformations")
 
         self.fractal = FractalWindow()
+        self.matrix = MatrixWindow()
 
         for name, action in self.actions.items():
             if name == "Exit":
                 action.triggered.connect(self.close)
             elif name == "Fractal":
                 action.triggered.connect(lambda checked: self.toggle_fractal(self.fractal))
+            elif name == "Matrix":
+                action.triggered.connect(lambda checked: self.toggle_matrix(self.matrix))
 
     def toggle_fractal(self, window):
-        window.hide() if self.fractal.isVisible() else window.show()
+        if self.fractal.isVisible():
+            window.hide()
+        else:
+            window.show()
+            window.activateWindow()
+            window.raise_()
+
+    def toggle_matrix(self, window):
+        if self.matrix.isVisible():
+            window.hide()
+        else:
+            window.show()
+            window.activateWindow()
+            window.raise_()
