@@ -9,9 +9,10 @@ from fractal_designer.actions import Actions
 from fractal_designer.windows.fractal import FractalWindow
 from fractal_designer.windows.matrix import MatrixWindow
 from fractal_designer.windows.design import DesignWindow
+from fractal_designer.windows.window import Window
 
 
-class MainWindow(QMainWindow):
+class MainWindow(Window, QMainWindow):
     def __init__(self, actions: Actions, parent=None):
         super().__init__(parent)
         self.actions_ = actions
@@ -149,11 +150,3 @@ class MainWindow(QMainWindow):
             window.show()
             window.activateWindow()
             window.raise_()
-
-    def disable_all_actions(self, menu_name: str):
-        for action in self.actions_.action_dicts[menu_name].values():
-            action.setDisabled(True)
-
-    def enable_all_actions(self, menu_name: str):
-        for action in self.actions_.action_dicts[menu_name].values():
-            action.setEnabled(True)
