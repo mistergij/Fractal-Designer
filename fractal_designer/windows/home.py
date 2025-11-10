@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QMainWindow, QMenu
 from fractal_designer.actions import Actions
 from fractal_designer.windows.fractal import FractalWindow
 from fractal_designer.windows.matrix import MatrixWindow
+from fractal_designer.windows.design import DesignWindow
 
 
 class MainWindow(QMainWindow):
@@ -22,6 +23,7 @@ class MainWindow(QMainWindow):
 
         self.fractal_window = FractalWindow(self.actions_)
         self.matrix_window = MatrixWindow(self.actions_)
+        self.design_window = DesignWindow(self.actions_)
 
         for name, action in self.actions_.action_dicts["Window"].items():
             if name == "Exit":
@@ -138,17 +140,6 @@ class MainWindow(QMainWindow):
     def add_separator(self, menu_name: str):
         menu = self.actions_.menu_dict[menu_name]
         menu.addSeparator()
-
-    def changeEvent(self, event):
-        if event.type() == QEvent.Type.ActivationChange:
-            if self.isActiveWindow():
-                self.disable_all_actions("Matrix")
-                self.disable_all_actions("Design")
-                self.disable_all_actions("Fractal")
-            elif self.fractal_window.isActiveWindow():
-                self.disable_all_actions("Matrix")
-                self.disable_all_actions("Design")
-                self.enable_all_actions("Fractal")
 
     @staticmethod
     def toggle_window(window):
