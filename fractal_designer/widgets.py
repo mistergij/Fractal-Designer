@@ -40,7 +40,8 @@ class MatrixInput(QGroupBox):
             line_edit.setFixedWidth(100)
             layout.addWidget(line_edit, i, 3, 1, 1)
             self.input_.append(line_edit)
-            
+
+
 class CompactInput(QGroupBox):
     def __init__(self, transformation_number: int = 0, parent=None):
         super().__init__(parent)
@@ -53,8 +54,12 @@ class CompactInput(QGroupBox):
         self.setSizePolicy(size_policy)
 
         layout = QGridLayout(self)
+        labels = ["a", "b", "c", "d", "e", "f", "p"]
         for i in range(7):
+            label = QLabel(labels[i])
+            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             line_edit = QLineEdit()
             line_edit.setFixedWidth(100)
-            layout.addWidget(line_edit, 0, 1, 1, 1)
+            layout.addWidget(label, 0, i, 1, 1)
+            layout.addWidget(line_edit, 1, i, 1, 1)
             self.input_.append(line_edit)

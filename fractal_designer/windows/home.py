@@ -5,7 +5,7 @@ from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import QMainWindow, QMenu
 
-from actions import Actions
+from fractal_designer.actions import Actions
 from fractal_designer.windows.fractal import FractalWindow
 from fractal_designer.windows.matrix import MatrixWindow
 
@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
             menu = menu_bar.addMenu(menu_name)
             self.actions_.menu_dict[menu_name] = menu
 
-        window_menu = menu_bar.addMenu("Window")
+        window_menu = self.actions_.menu_dict["Window"]
 
         self.add_action("New", "File", QKeySequence.StandardKey.New)
         self.add_action("Open...", "File", QKeySequence.StandardKey.Open)

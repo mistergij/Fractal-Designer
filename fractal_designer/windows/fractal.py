@@ -12,7 +12,7 @@ from fractal_designer.shapes.sierpinski_triangle import SierpinskiTriangle
 class FractalWindow(QMainWindow):
     def __init__(self, actions: Actions, parent=None):
         super().__init__(parent)
-        
+
         self.actions_ = actions
 
         self._main = QWidget()
@@ -36,7 +36,7 @@ class FractalWindow(QMainWindow):
         self.setWindowTitle("Fractal")
 
         self.setMinimumSize(600, 600)
-        
+
         self.active_window = False
 
     def changeEvent(self, event):
