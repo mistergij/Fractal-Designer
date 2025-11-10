@@ -1,6 +1,6 @@
-from typing import cast, override
+from typing import override
 
-from PySide6.QtCore import QEvent, Qt, Signal, SignalInstance, Slot
+from PySide6.QtCore import QEvent, Qt
 from PySide6.QtWidgets import (
     QGridLayout,
     QPushButton,
@@ -11,6 +11,7 @@ from PySide6.QtGui import QActionGroup
 
 from fractal_designer.actions import Actions
 from fractal_designer.widgets import MatrixInput, CompactInput
+from fractal_designer.windows.window import Window
 
 
 def clear_layout(layout):
@@ -76,7 +77,7 @@ class CompactWidget(QWidget):
                     layout.addWidget(remove_button, 1, 8, 1, 1)
 
 
-class MatrixWindow(QWidget):
+class MatrixWindow(Window, QWidget):
     def __init__(self, actions: Actions, parent=None):
         super().__init__(parent)
         self.actions_ = actions
@@ -110,22 +111,6 @@ class MatrixWindow(QWidget):
             elif name == "Scale/Rotation Form":
                 matrix_options_group.addAction(action)
 
-    def changeEvent(self, event):
-        if event.type() == QEvent.Type.ActivationChange:
-            self.active_window = not self.active_window
-            if self.active_window:
-                self.enable_all_actions("Matrix")
-            else:
-                self.disable_all_actions("Matrix")
-
-    def disable_all_actions(self, menu_name: str):
-        for action in self.actions_.action_dicts[menu_name].values():
-            action.setDisabled(True)
-
-    def enable_all_actions(self, menu_name: str):
-        for action in self.actions_.action_dicts[menu_name].values():
-            action.setEnabled(True)
-
     def set_mode(self, action_group: QActionGroup):
         checked_action_name = action_group.checkedAction().text()
         if self.current_layout != checked_action_name:
@@ -136,3 +121,12 @@ class MatrixWindow(QWidget):
             elif checked_action_name == "Compact Matrix Form":
                 self.layout().addWidget(CompactWidget())
                 self.current_layout = checked_action_name
+
+    @override
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.ActivationChange:
+            self.active_window = not self.active_window
+            if self.active_window:
+                self.enable_all_actions("Matrix")
+            else:
+                self.disable_all_actions("Matrix")
