@@ -1,5 +1,6 @@
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QGridLayout, QGroupBox, QLabel, QLineEdit, QPushButton, QSizePolicy, QVBoxLayout
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtWebEngineWidgets import QWebEngineView
+from PySide6.QtWidgets import QGridLayout, QGroupBox, QLabel, QLineEdit, QSizePolicy, QVBoxLayout
 
 
 class SignLabel(QVBoxLayout):
@@ -24,6 +25,7 @@ class MatrixInput(QGroupBox):
         self.setSizePolicy(size_policy)
 
         layout = QGridLayout(self)
+        view = QWebEngineView()
 
         for i in range(2):
             for j in range(2):
@@ -42,7 +44,6 @@ class MatrixInput(QGroupBox):
             self.input_.append(line_edit)
 
         label = QLabel("p")
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         line_edit = QLineEdit()
         line_edit.setFixedWidth(100)
         layout.addWidget(label, 0, 4, 1, 1)
