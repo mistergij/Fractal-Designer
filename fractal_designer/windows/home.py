@@ -1,4 +1,7 @@
 import sys
+from typing import override
+
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import QMainWindow
 
@@ -150,3 +153,7 @@ class MainWindow(Window, QMainWindow):
             window.show()
             window.activateWindow()
             window.raise_()
+
+    @override
+    def hideEvent(self, event):
+        QCoreApplication.instance().quit()
