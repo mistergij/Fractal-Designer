@@ -1,9 +1,6 @@
 import sys
-from typing import override
-
-from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui import QAction, QKeySequence
-from PySide6.QtWidgets import QMainWindow, QMenu
+from PySide6.QtWidgets import QMainWindow
 
 from fractal_designer.actions import Actions
 from fractal_designer.windows.fractal import FractalWindow
@@ -30,12 +27,15 @@ class MainWindow(Window, QMainWindow):
             if name == "Exit":
                 action.triggered.connect(self.close)
             elif name == "Fractal":
-                action.triggered.connect(lambda checked: self.toggle_window(self.fractal_window))
+                action.triggered.connect(lambda toggle: self.toggle_window(self.fractal_window))
             elif name == "Matrix":
-                action.triggered.connect(lambda checked: self.toggle_window(self.matrix_window))
+                action.triggered.connect(lambda toggle: self.toggle_window(self.matrix_window))
+            elif name == "Design":
+                action.triggered.connect(lambda toggle: self.toggle_window(self.design_window))
 
-        for action in self.actions_.action_dicts["Matrix"].values():
-            action.setDisabled(True)
+        for name, action in self.actions_.action_dicts["Design"].items():
+            if name == "New Transformation":
+                action.triggered.connect(lambda add: self.matrix_window.add_transformation())
 
     def create_menus(self):
         major_menu_names: list[str] = ["File", "Edit", "Matrix", "Design", "Fractal", "Window"]
@@ -145,7 +145,7 @@ class MainWindow(Window, QMainWindow):
     @staticmethod
     def toggle_window(window):
         if window.isVisible():
-            window.hide()
+            window.setVisible(False)
         else:
             window.show()
             window.activateWindow()

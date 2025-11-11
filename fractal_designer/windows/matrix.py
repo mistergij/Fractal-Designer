@@ -3,6 +3,7 @@ from typing import override
 from PySide6.QtCore import QEvent, Qt
 from PySide6.QtWidgets import (
     QGridLayout,
+    QGroupBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -14,67 +15,57 @@ from fractal_designer.widgets import MatrixInput, CompactInput
 from fractal_designer.windows.window import Window
 
 
-def clear_layout(layout):
-    if layout is not None:
-        while layout.count():
-            item = layout.takeAt(0)
-            widget = item.widget()
-            if widget is not None:
-                widget.deleteLater()
-            else:
-                clear_layout(item.layout())
-
-
-class MatrixWidget(QWidget):
+class InputWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        matrix_layout = QVBoxLayout(self)
+        layout = QVBoxLayout(self)
 
-        matrix_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        matrix_input = MatrixInput()
+        self.current_layout = "Matrix Equation Form"
 
-        self.transformation_list = [matrix_input]
+        self.transformation_list: list[QGroupBox] = []
 
-        matrix_layout.addWidget(matrix_input)
-        matrix_layout.addSpacing(20)
+        self.num_transformations = 0
 
-    @override
-    def changeEvent(self, event):
-        if len(self.transformation_list) != 1:
-            for i in self.transformation_list:
-                layout = i.layout()
-                remove_button = QPushButton("Remove")
+        self.add_widget()
 
-                if isinstance(layout, QGridLayout):
+    def add_widget(self):
+        widget: QGroupBox | None = None
+        if self.current_layout == "Matrix Equation Form":
+            widget = MatrixInput(self.num_transformations)
+            self.transformation_list.append(widget)
+        elif self.current_layout == "Compact Matrix Form":
+            widget = CompactInput(self.num_transformations)
+            self.transformation_list.append(widget)
+        if widget is not None:
+            self.layout().addWidget(widget)
+            self.layout().addSpacing(20)
+            self.num_transformations += 1
+
+        if len(self.transformation_list) > 1:
+            layout = self.transformation_list[-1].layout()
+            remove_button = QPushButton("Remove")
+            remove_button.clicked.connect(lambda remove: self.remove_widget(len(self.transformation_list) - 1))
+
+            if isinstance(layout, QGridLayout):
+                if self.current_layout == "Matrix Equation Form":
                     layout.addWidget(remove_button, 0, 5, 2, 1)
-
-
-class CompactWidget(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        compact_layout = QVBoxLayout(self)
-
-        compact_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
-        compact_input = CompactInput()
-
-        self.transformation_list = [compact_input]
-
-        compact_layout.addWidget(compact_input)
-        compact_layout.addSpacing(20)
-
-    @override
-    def changeEvent(self, event):
-        if len(self.transformation_list) != 1:
-            for i in self.transformation_list:
-                layout = i.layout()
-                remove_button = QPushButton("Remove")
-
-                if isinstance(layout, QGridLayout):
+                elif self.current_layout == "Compact Matrix Form":
                     layout.addWidget(remove_button, 1, 8, 1, 1)
+
+    def remove_last_widget(self):
+        self.remove_widget(len(self.transformation_list) - 1)
+
+    def remove_widget(self, idx: int):
+        widget: QGroupBox = self.transformation_list.pop(idx)
+        self.layout().addSpacing(-20)
+        self.num_transformations -= 1
+        if idx < len(self.transformation_list) - 1:
+            for i in range(idx, len(self.transformation_list)):
+                self.transformation_list[i].setTitle(f"Transformation {i - 1}")
+        widget.deleteLater()
 
 
 class MatrixWindow(Window, QWidget):
@@ -82,13 +73,11 @@ class MatrixWindow(Window, QWidget):
         super().__init__(parent)
         self.actions_ = actions
 
-        self.current_layout = "Matrix Equation Form"
-
         layout = QVBoxLayout(self)
 
-        matrix_widget = MatrixWidget()
+        self.input_widget = InputWidget()
 
-        layout.addWidget(matrix_widget)
+        layout.addWidget(self.input_widget)
 
         self.setWindowTitle("Matrix")
 
@@ -113,20 +102,22 @@ class MatrixWindow(Window, QWidget):
 
     def set_mode(self, action_group: QActionGroup):
         checked_action_name = action_group.checkedAction().text()
-        if self.current_layout != checked_action_name:
-            clear_layout(self.layout())
-            if checked_action_name == "Matrix Equation Form":
-                self.layout().addWidget(MatrixWidget())
-                self.current_layout = checked_action_name
-            elif checked_action_name == "Compact Matrix Form":
-                self.layout().addWidget(CompactWidget())
-                self.current_layout = checked_action_name
+        current_layout = self.input_widget.current_layout
+        if current_layout != checked_action_name:
+            self.input_widget.current_layout = checked_action_name
+            while len(self.input_widget.transformation_list) != 0:
+                self.input_widget.remove_last_widget()
+            self.input_widget.add_widget()
+
+    def add_transformation(self):
+        self.input_widget.add_widget()
 
     @override
-    def changeEvent(self, event):
-        if event.type() == QEvent.Type.ActivationChange:
-            self.active_window = not self.active_window
-            if self.active_window:
-                self.enable_all_actions("Matrix")
-            else:
-                self.disable_all_actions("Matrix")
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.enable_all_actions("Matrix")
+
+    @override
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self.disable_all_actions("Matrix")

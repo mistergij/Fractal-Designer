@@ -35,10 +35,11 @@ class DesignWindow(Window, QMainWindow):
         self._ax = canvas.figure.subplots()
 
     @override
-    def changeEvent(self, event):
-        if event.type() == QEvent.Type.ActivationChange:
-            self.active_window = not self.active_window
-            if self.active_window:
-                self.enable_all_actions("Design")
-            else:
-                self.disable_all_actions("Design")
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.enable_all_actions("Design")
+
+    @override
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self.disable_all_actions("Design")
