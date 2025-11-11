@@ -14,9 +14,7 @@ from fractal_designer.windows.window import Window
 
 class FractalWindow(Window, QMainWindow):
     def __init__(self, actions: Actions, parent=None):
-        super().__init__(parent)
-
-        self.actions_ = actions
+        super().__init__(actions, parent)
 
         self._main = QWidget()
         self.setCentralWidget(self._main)

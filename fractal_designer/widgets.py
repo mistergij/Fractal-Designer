@@ -41,6 +41,13 @@ class MatrixInput(QGroupBox):
             layout.addWidget(line_edit, i, 3, 1, 1)
             self.input_.append(line_edit)
 
+        label = QLabel("p")
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        line_edit = QLineEdit()
+        line_edit.setFixedWidth(100)
+        layout.addWidget(label, 0, 4, 1, 1)
+        layout.addWidget(line_edit, 1, 4, 1, 1)
+
 
 class CompactInput(QGroupBox):
     def __init__(self, transformation_number: int = 0, parent=None):

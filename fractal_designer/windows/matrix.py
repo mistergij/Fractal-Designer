@@ -1,9 +1,10 @@
-from typing import override
+from typing import cast, override
 
 from PySide6.QtCore import QEvent, Qt
 from PySide6.QtWidgets import (
     QGridLayout,
     QGroupBox,
+    QLineEdit,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -24,7 +25,6 @@ class InputWidget(QWidget):
         super().__init__(parent)
 
         input_layout = QVBoxLayout(self)
-
         input_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.current_layout = "Matrix Equation Form"
@@ -48,20 +48,21 @@ class InputWidget(QWidget):
             widget = CompactInput(self.num_transformations)
             self.transformation_list.append(widget)
         if widget is not None:
-            self.layout().addWidget(widget)
-            self.layout().addSpacing(20)
+            layout: QVBoxLayout = cast(QVBoxLayout, self.layout())
+            layout.addWidget(widget)
+            layout.addSpacing(20)
             self.num_transformations += 1
 
         if len(self.transformation_list) > 1:
-            layout = self.transformation_list[-1].layout()
+            transformation_layout: QGridLayout = cast(QGridLayout, self.transformation_list[-1].layout())
             remove_button = QPushButton("Remove")
             remove_button.clicked.connect(lambda remove: self.remove_widget(len(self.transformation_list) - 1))
 
-            if isinstance(layout, QGridLayout):
+            if isinstance(transformation_layout, QGridLayout):
                 if self.current_layout == "Matrix Equation Form":
-                    layout.addWidget(remove_button, 0, 5, 2, 1)
+                    transformation_layout.addWidget(remove_button, 0, 5, 2, 1)
                 elif self.current_layout == "Compact Matrix Form":
-                    layout.addWidget(remove_button, 1, 8, 1, 1)
+                    transformation_layout.addWidget(remove_button, 1, 8, 1, 1)
 
     def remove_last_widget(self) -> None:
         """
@@ -77,7 +78,8 @@ class InputWidget(QWidget):
         :return: None
         """
         widget: QGroupBox = self.transformation_list.pop(idx)
-        self.layout().addSpacing(-20)
+        layout: QVBoxLayout = cast(QVBoxLayout, self.layout())
+        layout.addSpacing(-20)
         self.num_transformations -= 1
         if idx < len(self.transformation_list) - 1:
             for i in range(idx, len(self.transformation_list)):
@@ -85,15 +87,15 @@ class InputWidget(QWidget):
         widget.deleteLater()
 
 
-class ProbabilityWidget:
-    def __init__(self):
-        pass
-
-
 class MatrixWindow(Window, QWidget):
     def __init__(self, actions: Actions, parent=None):
-        super().__init__(parent)
-        self.actions_ = actions
+        """
+        Creates the Matrix window to edit the current IFS
+        :param Actions actions: The list of actions this window can perform
+        :param QWidget parent: The Window this is located in, if applicable
+        :returns: None
+        """
+        super().__init__(actions, parent)
 
         layout = QGridLayout(self)
 

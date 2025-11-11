@@ -14,8 +14,7 @@ from fractal_designer.windows.window import Window
 
 class MainWindow(Window, QMainWindow):
     def __init__(self, actions: Actions, parent=None):
-        super().__init__(parent)
-        self.actions_ = actions
+        super().__init__(actions, parent)
 
         # Set title
         self.setWindowTitle("Transformations")
@@ -156,4 +155,6 @@ class MainWindow(Window, QMainWindow):
 
     @override
     def hideEvent(self, event):
-        QCoreApplication.instance().quit()
+        instance = QCoreApplication.instance()
+        if instance is not None:
+            instance.quit()
