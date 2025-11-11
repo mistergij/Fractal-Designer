@@ -17,11 +17,15 @@ from fractal_designer.windows.window import Window
 
 class InputWidget(QWidget):
     def __init__(self, parent=None):
+        """
+        Collects all input GroupBoxes and displays them properly
+        :param QWidget parent: The Widget this instance is located in
+        """
         super().__init__(parent)
 
-        layout = QVBoxLayout(self)
+        input_layout = QVBoxLayout(self)
 
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        input_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.current_layout = "Matrix Equation Form"
 
@@ -31,7 +35,11 @@ class InputWidget(QWidget):
 
         self.add_widget()
 
-    def add_widget(self):
+    def add_widget(self) -> None:
+        """
+        Adds a single GroupBox to the layout depending on the active display form
+        :return None
+        """
         widget: QGroupBox | None = None
         if self.current_layout == "Matrix Equation Form":
             widget = MatrixInput(self.num_transformations)
@@ -55,10 +63,19 @@ class InputWidget(QWidget):
                 elif self.current_layout == "Compact Matrix Form":
                     layout.addWidget(remove_button, 1, 8, 1, 1)
 
-    def remove_last_widget(self):
+    def remove_last_widget(self) -> None:
+        """
+        Removes the last widget in transformation_list
+        :return: None
+        """
         self.remove_widget(len(self.transformation_list) - 1)
 
     def remove_widget(self, idx: int):
+        """
+        Removes an input GroupBox given its index
+        :param idx: The index of the GroupBox in transformation_list
+        :return: None
+        """
         widget: QGroupBox = self.transformation_list.pop(idx)
         self.layout().addSpacing(-20)
         self.num_transformations -= 1
@@ -68,16 +85,21 @@ class InputWidget(QWidget):
         widget.deleteLater()
 
 
+class ProbabilityWidget:
+    def __init__(self):
+        pass
+
+
 class MatrixWindow(Window, QWidget):
     def __init__(self, actions: Actions, parent=None):
         super().__init__(parent)
         self.actions_ = actions
 
-        layout = QVBoxLayout(self)
+        layout = QGridLayout(self)
 
         self.input_widget = InputWidget()
 
-        layout.addWidget(self.input_widget)
+        layout.addWidget(self.input_widget, 0, 0, 1, 1)
 
         self.setWindowTitle("Matrix")
 
