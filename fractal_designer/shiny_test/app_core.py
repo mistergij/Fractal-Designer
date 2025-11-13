@@ -1,27 +1,96 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-from shiny import App, Inputs, Outputs, Session, render, ui
+from matplotlib.patches import Polygon
+from shiny import App, Inputs, Outputs, Session, module, reactive, render, ui
 
-app_ui = ui.page_sidebar(
-    ui.sidebar(
-        ui.input_action_button("add", "Add Transformation"),
-    ),
-    ui.card(
-        ui.output_plot("plot"),
-    ),
-)
+
+@module.ui
+def create_transformation(transformation_num: int = 0) -> ui.card:
+    return ui.card(
+                ui.card_header(f"Transformation {transformation_num}"),
+                ui.input_numeric("a", "a", 1, min=-1, max=1, step=0.1),
+                ui.input_numeric("b", "b", 0, min=-1, max=1, step=0.1),
+                ui.input_numeric("c", "c", 0, min=-1, max=1, step=0.1),
+                ui.input_numeric("d", "d", 1, min=-1, max=1, step=0.1),
+                ui.input_numeric("e", "e", 0, min=-1, max=1, step=0.1),
+                ui.input_numeric("f", "f", 0, min=-1, max=1, step=0.1),
+                ui.input_numeric("p", "p", 0, min=-1, max=1, step=0.1),
+                id="transformation",
+            )
+
+@module.server
+def transformation_server(input: Inputs, output: Outputs, session: Session):
+    transformation = reactive.value(
+        [
+            input.a,
+            input.b,
+            input.c,
+            input.d,
+            input.e,
+            input.f,
+            input.p,
+        ]
+    )
+
+    return transformation
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    @render.plot(alt="A histogram")
-    def plot() -> object:
-        np.random.seed(19680801)
-        x = 100 + 15 * np.random.randn(437)
+    server_transformations = transformation_server("transformation_0")
+    @render.plot(alt="A fractal")
+    def plot():
+        # transformations = []
+        # transformations.append(
+        #     np.array(
+        #         [
+        #             [float(input.a_0()), float(input.b_0()), float(input.e_0())],
+        #             [float(input.c_0()), float(input.d_0()), float(input.f_0())],
+        #             [0, 0, 1],
+        #         ]
+        #     )
+        # )
+
+        transformations = [
+            np.array(
+                [
+                    [server_transformations.get()[0](), server_transformations.get()[1](), server_transformations.get()[4]()],
+                    [server_transformations.get()[2](), server_transformations.get()[3](), server_transformations.get()[5]()],
+                    [0, 0, 1],
+                ]
+            )
+        ]
+
+        points = np.array([[0, 0, 1], [0, 1, 1], [1, 1, 1], [1, 0, 1]]).T
+
+        old_points = [points]
+        new_points = []
+        colors = [(1, 0, 0, 0.5), (0, 1, 0, 0.5), (0, 0, 1, 0.5)]
+
+        for i in range(1, input.iterations() + 1):
+            new_points = []
+            for polygon in old_points:
+                for transformation in transformations:
+                    new_points.append(transformation @ polygon)
+
+            old_points = new_points
 
         fig, ax = plt.subplots()
-        ax.hist(x, input.n(), density=True)
+
+        for i, w in enumerate(new_points):
+            patch = Polygon(w[0:2, :].T, facecolor=colors[i % 3])
+            ax.add_patch(patch)
+
         return fig
 
+app_ui = ui.page_sidebar(
+    ui.sidebar(
+        create_transformation("transformation_0"),
+        # ui.input_action_button("add_transformation", "Add Transformation"),
+        ui.input_numeric("iterations", "Number of Iterations", 1, min=1, max=8),
+    ),
+    ui.output_plot("plot"),
+)
 
 app = App(app_ui, server)
