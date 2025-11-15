@@ -40,7 +40,6 @@ def server(input: Inputs, output: Outputs, session: Session):
     server_transformations: list[reactive.Value[list[reactive.Value[float]]]] = []
     for i in range(3):
         server_transformations.append(transformation_server(f"transformation_{i}"))
-    # server_transformations = transformation_server("transformation_0")
     @render.plot(alt="A fractal")
     def plot():
         transformations: list[np.typing.NDArray[np.float32]] = []
