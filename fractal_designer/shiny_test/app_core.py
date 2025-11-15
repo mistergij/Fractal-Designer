@@ -38,7 +38,10 @@ def transformation_server(input: Inputs, output: Outputs, session: Session):
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    server_transformations = transformation_server("transformation_0")
+    server_transformations = []
+    for i in range(3):
+        server_transformations.append(transformation_server(f"transformation_{i}"))
+    # server_transformations = transformation_server("transformation_0")
     @render.plot(alt="A fractal")
     def plot():
         # transformations = []
@@ -52,15 +55,18 @@ def server(input: Inputs, output: Outputs, session: Session):
         #     )
         # )
 
-        transformations = [
-            np.array(
-                [
-                    [server_transformations.get()[0](), server_transformations.get()[1](), server_transformations.get()[4]()],
-                    [server_transformations.get()[2](), server_transformations.get()[3](), server_transformations.get()[5]()],
-                    [0, 0, 1],
-                ]
+        transformations = []
+        
+        for server in server_transformations:
+            transformations.append(
+                np.array(
+                    [
+                        [server.get()[0](), server.get()[1](), server.get()[4]()],
+                        [server.get()[2](), server.get()[3](), server.get()[5]()],
+                        [0, 0, 1],
+                    ]
+                )
             )
-        ]
 
         points = np.array([[0, 0, 1], [0, 1, 1], [1, 1, 1], [1, 0, 1]]).T
 
@@ -86,7 +92,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 app_ui = ui.page_sidebar(
     ui.sidebar(
-        create_transformation("transformation_0"),
+        [create_transformation(f"transformation_{i}") for i in range(3)],
         # ui.input_action_button("add_transformation", "Add Transformation"),
         ui.input_numeric("iterations", "Number of Iterations", 1, min=1, max=8),
     ),
