@@ -32,7 +32,7 @@ def plot():
     points = reactive.value(np.array([[0, 0, 1], [0, 1, 1], [1, 1, 1], [1, 0, 1]]).T)
 
     old_points = [points.get()]
-    new_points = []
+    new_points: list[np.typing.NDArray[np.float32]] = []
     colors = [(1, 0, 0, 0.5), (0, 1, 0, 0.5), (0, 0, 1, 0.5)]
 
     for i in range(1, input.iterations() + 1):
@@ -43,7 +43,7 @@ def plot():
 
         old_points = new_points
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots() # pyright: ignore [reportUnknownMemberType]
 
 
     for i, w in enumerate(new_points):

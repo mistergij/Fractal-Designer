@@ -1,4 +1,3 @@
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -7,7 +6,7 @@ from shiny import App, Inputs, Outputs, Session, module, reactive, render, ui
 
 
 @module.ui
-def create_transformation(transformation_num: int = 0) -> ui.card:
+def create_transformation(transformation_num: int = 0) -> ui.Tag:
     return ui.card(
                 ui.card_header(f"Transformation {transformation_num}"),
                 ui.input_numeric("a", "a", 1, min=-1, max=1, step=0.1),
@@ -21,7 +20,7 @@ def create_transformation(transformation_num: int = 0) -> ui.card:
             )
 
 @module.server
-def transformation_server(input: Inputs, output: Outputs, session: Session):
+def transformation_server(input: Inputs, output: Outputs, session: Session) -> reactive.Value[list[reactive.Value[float]]]:
     transformation = reactive.value(
         [
             input.a,
@@ -38,7 +37,7 @@ def transformation_server(input: Inputs, output: Outputs, session: Session):
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    server_transformations = []
+    server_transformations: list[reactive.Value[list[reactive.Value[float]]]] = []
     for i in range(3):
         server_transformations.append(transformation_server(f"transformation_{i}"))
     # server_transformations = transformation_server("transformation_0")
@@ -55,7 +54,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         #     )
         # )
 
-        transformations = []
+        transformations: list[np.typing.NDArray[np.float32]] = []
         
         for server in server_transformations:
             transformations.append(
@@ -71,7 +70,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         points = np.array([[0, 0, 1], [0, 1, 1], [1, 1, 1], [1, 0, 1]]).T
 
         old_points = [points]
-        new_points = []
+        new_points: list[np.typing.NDArray[np.float32]] = []
         colors = [(1, 0, 0, 0.5), (0, 1, 0, 0.5), (0, 0, 1, 0.5)]
 
         for i in range(1, input.iterations() + 1):
@@ -82,7 +81,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
             old_points = new_points
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots() # pyright: ignore [reportUnknownMemberType]
 
         for i, w in enumerate(new_points):
             patch = Polygon(w[0:2, :].T, facecolor=colors[i % 3])
