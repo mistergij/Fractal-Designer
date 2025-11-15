@@ -43,17 +43,6 @@ def server(input: Inputs, output: Outputs, session: Session):
     # server_transformations = transformation_server("transformation_0")
     @render.plot(alt="A fractal")
     def plot():
-        # transformations = []
-        # transformations.append(
-        #     np.array(
-        #         [
-        #             [float(input.a_0()), float(input.b_0()), float(input.e_0())],
-        #             [float(input.c_0()), float(input.d_0()), float(input.f_0())],
-        #             [0, 0, 1],
-        #         ]
-        #     )
-        # )
-
         transformations: list[np.typing.NDArray[np.float32]] = []
         
         for server in server_transformations:
@@ -92,7 +81,6 @@ def server(input: Inputs, output: Outputs, session: Session):
 app_ui = ui.page_sidebar(
     ui.sidebar(
         [create_transformation(f"transformation_{i}") for i in range(3)],
-        # ui.input_action_button("add_transformation", "Add Transformation"),
         ui.input_numeric("iterations", "Number of Iterations", 1, min=1, max=8),
     ),
     ui.output_plot("plot"),
