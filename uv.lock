@@ -294,6 +294,7 @@ dependencies = [
     { name = "pyside6-essentials" },
     { name = "pyside6-stubs" },
     { name = "requests" },
+    { name = "seventeenlands" },
     { name = "shiny" },
 ]
 
@@ -306,6 +307,7 @@ requires-dist = [
     { name = "pyside6-essentials", specifier = ">=6.10.0" },
     { name = "pyside6-stubs", specifier = ">=6.7.3.0" },
     { name = "requests", specifier = ">=2.32.5" },
+    { name = "seventeenlands", specifier = ">=0.1.44" },
     { name = "shiny", specifier = ">=1.5.0" },
 ]
 
@@ -757,6 +759,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/18/5d/3bf57dcd21979b887f014ea83c24ae194cfcd12b9e0fda66b957c69d1fca/setuptools-80.9.0.tar.gz", hash = "sha256:f36b47402ecde768dbfafc46e8e4207b4360c654f1f3bb84475f0a28628fb19c", size = 1319958, upload-time = "2025-05-27T00:56:51.443Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a3/dc/17031897dae0efacfea57dfd3a82fdd2a2aeb58e0ff71b77b87e44edc772/setuptools-80.9.0-py3-none-any.whl", hash = "sha256:062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922", size = 1201486, upload-time = "2025-05-27T00:56:49.664Z" },
+]
+
+[[package]]
+name = "seventeenlands"
+version = "0.1.44"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dateutil" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1c/49/89957d58751656cefb95187a7249355a51509750c04826747944240d69ba/seventeenlands-0.1.44.tar.gz", hash = "sha256:cb3f871a8bca22ebb73aed63a3e68d24f88d88445566fb13b62cbdb558724b02", size = 62678, upload-time = "2025-10-30T02:32:18.698Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/63/44/fa756539444735df520bb529d2b9236b2285d4107f181536236b543e96fe/seventeenlands-0.1.44-py3-none-any.whl", hash = "sha256:5eb6146c94bcb723022088ed00e0320002fc1a4087745a39ae14feffdd1b295e", size = 43360, upload-time = "2025-10-30T02:32:17.673Z" },
 ]
 
 [[package]]

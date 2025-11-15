@@ -46,6 +46,7 @@
           env = (python.withPackages (python-pkgs: with python-pkgs; [
             pytest
             setuptools
+            tkinter
             wheel
             venvShellHook
           ])).overrideAttrs {
