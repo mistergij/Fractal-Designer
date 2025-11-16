@@ -11,6 +11,7 @@ app_ui = ui.page_sidebar(
         ui.output_ui("create_transformation"),
         ui.input_numeric("iterations", "Number of Iterations", 1, min=1, max=8),
         ui.input_action_button("add_transformation", "Add Transformation"),
+        ui.input_action_button("graph_transformations", "Graph Transformations")
     ),
     ui.output_plot("plot"),
 )
@@ -56,7 +57,7 @@ def transformation_server(
 def server(input: Inputs, output: Outputs, session: Session):
     @reactive.calc
     def compute_transformation():
-        input.add_transformation()
+        input.graph_transformations()
         _transformation_servers = transformation_servers.get()
         transformations: list[np.typing.NDArray[np.float32]] = []
 
