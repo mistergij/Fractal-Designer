@@ -9,11 +9,11 @@ from shinywidgets import output_widget, render_widget
 app_ui = ui.page_sidebar(
     ui.sidebar(
         ui.output_ui("create_transformation"),
-        ui.input_numeric("iterations", "Number of Iterations", 1, min=1, max=8),
-        ui.input_action_button("add_transformation", "Add Transformation"),
-        ui.input_action_button("graph_transformations", "Graph Transformations"),
     ),
     output_widget("plot"),
+    ui.input_numeric("iterations", "Number of Iterations", 1, min=1, max=8),
+    ui.input_action_button("add_transformation", "Add Transformation"),
+    ui.input_action_button("graph_transformations", "Graph Transformations"),
 )
 
 num_transformations: reactive.Value[int] = reactive.value(0)
