@@ -21,16 +21,18 @@ transformation_servers: reactive.Value[list[reactive.Value[list[reactive.Value[f
 
 
 @module.ui
-def transformation_card(transformation_num: int = 0) -> ui.Tag:
+def transformation_card(
+    transformation_num: int = 0, a: float = 1, b: float = 0, c: float = 0, d: float = 1, e: float = 0, f: float = 0, p: float = 0
+) -> ui.Tag:
     return ui.card(
         ui.card_header(f"Transformation {transformation_num}"),
-        ui.input_numeric("a", "a", 1, min=-1, max=1, step=0.1, update_on = "blur"),
-        ui.input_numeric("b", "b", 0, min=-1, max=1, step=0.1, update_on = "blur"),
-        ui.input_numeric("c", "c", 0, min=-1, max=1, step=0.1, update_on = "blur"),
-        ui.input_numeric("d", "d", 1, min=-1, max=1, step=0.1, update_on = "blur"),
-        ui.input_numeric("e", "e", 0, min=-1, max=1, step=0.1, update_on = "blur"),
-        ui.input_numeric("f", "f", 0, min=-1, max=1, step=0.1, update_on = "blur"),
-        ui.input_numeric("p", "p", 0, min=-1, max=1, step=0.1, update_on = "blur"),
+        ui.input_numeric("a", "a", a, min=-1, max=1, step=0.1, update_on="blur"),
+        ui.input_numeric("b", "b", b, min=-1, max=1, step=0.1, update_on="blur"),
+        ui.input_numeric("c", "c", c, min=-1, max=1, step=0.1, update_on="blur"),
+        ui.input_numeric("d", "d", d, min=-1, max=1, step=0.1, update_on="blur"),
+        ui.input_numeric("e", "e", e, min=-1, max=1, step=0.1, update_on="blur"),
+        ui.input_numeric("f", "f", f, min=-1, max=1, step=0.1, update_on="blur"),
+        ui.input_numeric("p", "p", p, min=-1, max=1, step=0.1, update_on="blur"),
         id="transformation",
     )
 
@@ -91,18 +93,18 @@ def server(input: Inputs, output: Outputs, session: Session):
     def plot():
         return go.Figure(
             layout_xaxis_range=[0, 1], layout_yaxis_range=[0, 1], layout_xaxis_dtick=0.1, layout_yaxis_dtick=0.1
-        )  
+        )
 
     @reactive.effect
     def _():
         new_points: list[np.typing.NDArray[np.float32]] = compute_transformation()
-        plot.widget.data = [] # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
+        plot.widget.data = []  # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
         _num_transformations = num_transformations.get()
         for i in range(_num_transformations):
             polygon_points: list[np.typing.NDArray[np.float32]] = []
             for j in range(i, len(new_points), _num_transformations):
                 polygon_points.append(new_points[j])
-            
+
             x_list: list[np.typing.NDArray[np.float32] | None] = []
             y_list: list[np.typing.NDArray[np.float32] | None] = []
             for polygon in polygon_points:
@@ -120,17 +122,39 @@ def server(input: Inputs, output: Outputs, session: Session):
             if y_list:
                 y_list.pop()
 
-            plot.widget.add_scatter( # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
-                x=x_list, y=y_list, fill="toself", fillcolor=px.colors.qualitative.G10[i], opacity=0.5, name=f"Transformation {i}"
+            plot.widget.add_scatter(  # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
+                x=x_list,
+                y=y_list,
+                fill="toself",
+                fillcolor=px.colors.qualitative.G10[i],
+                opacity=0.5,
+                name=f"Transformation {i}",
             )
 
     @render.ui
     @reactive.event(input.add_transformation)
     def create_transformation():
         _num_transformations = num_transformations.get()
-        transformation_cards = [transformation_card(f"transformation_{i}", i) for i in range(_num_transformations + 1)]
-        num_transformations.set(_num_transformations + 1)
+        _transformation_servers = transformation_servers.get()
 
+        transformation_cards: list[ui.Tag] = []
+
+        if _num_transformations == 0:
+            transformation_cards.append(transformation_card("transformation_0", 0))
+        else:
+            for i in range(_num_transformations):
+                a = _transformation_servers[i].get()[0].get()
+                b = _transformation_servers[i].get()[1].get()
+                c = _transformation_servers[i].get()[2].get()
+                d = _transformation_servers[i].get()[3].get()
+                e = _transformation_servers[i].get()[4].get()
+                f = _transformation_servers[i].get()[5].get()
+                p = _transformation_servers[i].get()[6].get()
+                transformation_cards.append(transformation_card(f"transformation_{i}", i, a, b, c, d, e, f, p))
+
+            transformation_cards.append(transformation_card(f"transformation_{_num_transformations}", _num_transformations))
+
+        num_transformations.set(_num_transformations + 1)
         return transformation_cards
 
     @reactive.effect
