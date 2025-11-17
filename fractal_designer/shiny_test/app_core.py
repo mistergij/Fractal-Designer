@@ -8,7 +8,6 @@ from shinywidgets import output_widget, render_widget
 
 app_ui = ui.page_sidebar(
     ui.sidebar(
-        # [create_transformation(f"transformation_{i}") for i in range(3)],
         ui.output_ui("create_transformation"),
         ui.input_numeric("iterations", "Number of Iterations", 1, min=1, max=8),
         ui.input_action_button("add_transformation", "Add Transformation"),
@@ -124,19 +123,6 @@ def server(input: Inputs, output: Outputs, session: Session):
             plot.widget.add_scatter( # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
                 x=x_list, y=y_list, fill="toself", fillcolor=px.colors.qualitative.G10[i], opacity=0.5, name=f"Transformation {i}"
             )
-                
-        # for i, w in enumerate(new_points):
-        #     polygon = w[0:2, :].T
-        #     x = polygon[:, 0].tolist()
-        #     y = polygon[:, 1].tolist()
-
-        #     x.append(x[0])
-        #     y.append(y[0])
-
-        #     plot.widget.add_scatter( # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
-        #         x=x, y=y, fill="toself", fillcolor=px.colors.qualitative.G10[i % num_transformations.get()], opacity=0.5, name=f"Transformation {i % num_transformations.get()}"
-        #     )
-
 
     @render.ui
     @reactive.event(input.add_transformation)
