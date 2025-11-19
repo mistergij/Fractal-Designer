@@ -149,6 +149,7 @@ class FractalDesigner:
             )
 
         @reactive.effect
+        @reactive.event(input.graph_transformations)
         def _():
             new_points: list[np.typing.NDArray[np.float32]] = compute_transformation()
             plot.widget.data = []  # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
