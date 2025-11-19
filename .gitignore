@@ -5,3 +5,5 @@
 *.xml
 __pycache__/*
 .idea/vcs.xml
+*.cpython-313.pyc
+nohup.out
