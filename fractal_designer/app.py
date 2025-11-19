@@ -125,7 +125,14 @@ class FractalDesigner:
                 for server in _transformation_servers:
                     weights.append(server.get()[6]())
 
-                # TODO: Convert to equal probabilities if weights do not add to one and display error message
+                if np.sum(np.array(weights)) != 1:
+                    weights = [1 / len(weights) for _ in range(len(weights))]
+                    m = ui.modal(
+                        "Probabilities do not add up to one. Automatically corrected.",
+                        title="Probability Error",
+                        easy_close=True,
+                    )
+                    ui.modal_show(m)
 
                 for _ in range(input.iterations_continuous()):
                     transformation = random.choices(transformations, weights=weights)
