@@ -5,7 +5,6 @@ probabilities (Barnsley, 1993, pp. 89-90).
 Author: Alexander Kral
 """
 
-
 import random
 from typing import Callable
 
@@ -87,12 +86,12 @@ class FractalDesigner:
 
     def server(self, input: Inputs, output: Outputs, session: Session):
         @reactive.calc
-        def compute_transformation():
+        def compute_transformation() -> list[tuple[int, np.typing.NDArray[np.float32]]]:
             input.graph_transformations()
 
             _transformation_servers = self.transformation_servers.get()
             transformations: list[np.typing.NDArray[np.float32]] = []
-            new_points: list[np.typing.NDArray[np.float32]] = []
+            new_points: list[tuple[int, np.typing.NDArray[np.float32]]] = []
 
             for server in _transformation_servers:
                 transformations.append(
@@ -106,15 +105,15 @@ class FractalDesigner:
                 )
 
             if input.radio_mode.get() == "discrete":
-                old_points: list[np.typing.NDArray[np.float32]] = [
-                    np.array([[0, 0, 1], [0, 1, 1], [1, 1, 1], [1, 0, 1]]).T
+                old_points: list[tuple[int, np.typing.NDArray[np.float32]]] = [
+                    (0, np.array([[0, 0, 1], [0, 1, 1], [1, 1, 1], [1, 0, 1]]).T)
                 ]
 
                 for _ in range(input.iterations_discrete()):
                     new_points = []
                     for polygon in old_points:
-                        for transformation in transformations:
-                            new_points.append(transformation @ polygon)
+                        for i, transformation in enumerate(transformations):
+                            new_points.append((i, transformation @ polygon[1]))
 
                         old_points = new_points
 
@@ -135,10 +134,12 @@ class FractalDesigner:
                     ui.modal_show(m)
 
                 for _ in range(input.iterations_continuous()):
-                    transformation = random.choices(transformations, weights=weights)
+                    idx = range(len(transformations))
+                    transformation_idx = random.choices(idx, weights=weights)[0]
+                    transformation = transformations[transformation_idx]
                     point = transformation @ point
                     point = point.T
-                    new_points.append(point)
+                    new_points.append((transformation_idx, point))
 
             return new_points
 
@@ -150,64 +151,42 @@ class FractalDesigner:
 
         @reactive.effect
         @reactive.event(input.graph_transformations)
-        def _():
-            new_points: list[np.typing.NDArray[np.float32]] = compute_transformation()
+        def regraph_transformations():
+            new_points = compute_transformation()
             plot.widget.data = []  # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
             _num_transformations = self.num_transformations.get()
 
             if input.radio_mode.get() == "discrete":
-                for i in range(_num_transformations):
-                    polygon_points: list[np.typing.NDArray[np.float32]] = []
-                    for j in range(i, len(new_points), _num_transformations):
-                        polygon_points.append(new_points[j])
+                transformations_plotted: set[int] = set()
 
-                    x_list_discrete: list[np.typing.NDArray[np.float32] | None] = []
-                    y_list_discrete: list[np.typing.NDArray[np.float32] | None] = []
-                    for polygon in polygon_points:
-                        x_list_discrete.extend(polygon[0, :])
-                        x_list_discrete.append(None)
-
-                        y_list_discrete.extend(polygon[1, :])
-                        y_list_discrete.append(None)
-
-                    if x_list_discrete:
-                        x_list_discrete.pop()
-                    if y_list_discrete:
-                        y_list_discrete.pop()
-
+                for idx, transformation in new_points:
                     plot.widget.add_scatter(  # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
-                        x=x_list_discrete,
-                        y=y_list_discrete,
+                        x=transformation[0, :],
+                        y=transformation[1, :],
                         fill="toself",
-                        fillcolor=px.colors.qualitative.G10[i],
-                        opacity=0.5,
-                        name=f"Transformation {i}",
+                        fillcolor=px.colors.qualitative.G10[idx],
+                        name=f"Transformation {idx}",
+                        legendgroup=f"Transformation {idx}",
+                        showlegend=True if idx not in transformations_plotted else False,
                     )
+
+                    transformations_plotted.add(idx)
 
             elif input.radio_mode.get() == "continuous":
-                scatter_points: list[np.typing.NDArray[np.float32]] = []
+                transformations_plotted: set[int] = set()
 
-                for i in range(_num_transformations):
-                    for j in range(i, len(new_points), _num_transformations):
-                        scatter_points.append(new_points[j])
-
-                    x_list_continuous: list[np.typing.NDArray[np.float32]] = []
-                    y_list_continuous: list[np.typing.NDArray[np.float32]] = []
-
-                    for scatter in scatter_points:
-                        scatter = scatter.reshape([3, 1])  # Reshape into column vector
-                        x_list_continuous.append(scatter[0, 0])  # First item in column vector
-                        y_list_continuous.append(scatter[1, 0])  # Second item in column vector
-
-                    # TODO: Implement proper color for continuous algorithm
-
+                for idx, transformation in new_points:
                     plot.widget.add_scatter(  # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
-                        x=x_list_continuous,
-                        y=y_list_continuous,
-                        marker_color=px.colors.qualitative.G10[i],
-                        name=f"Transformation {i}",
+                        x=[transformation[0]],
+                        y=[transformation[1]],
+                        marker_color=px.colors.qualitative.G10[idx],
+                        name=f"Transformation {idx}",
+                        legendgroup=f"Transformation {idx}",
                         mode="markers",
+                        showlegend=True if idx not in transformations_plotted else False
                     )
+
+                    transformations_plotted.add(idx)
 
         @render.ui
         @reactive.event(input.add_transformation)
@@ -254,6 +233,7 @@ class FractalDesigner:
 
     def get_ui(self) -> ui.Tag:
         return self.app_ui
+
 
 designer = FractalDesigner()
 app = App(designer.get_ui(), designer.get_server())
