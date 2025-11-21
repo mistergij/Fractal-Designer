@@ -16,6 +16,9 @@ from shiny import App, Inputs, Outputs, Session, module, reactive, render, ui
 from shinywidgets import output_widget, render_widget
 
 
+NDArrayFloat32 = np.typing.NDArray[np.float32]
+
+
 class FractalDesigner:
     def __init__(self):
         self.app_ui = ui.page_sidebar(
@@ -86,12 +89,14 @@ class FractalDesigner:
 
     def server(self, input: Inputs, output: Outputs, session: Session):
         @reactive.calc
-        def compute_transformation() -> list[tuple[int, np.typing.NDArray[np.float32]]]:
+        def compute_transformation() -> list[tuple[int, NDArrayFloat32]]:
             input.graph_transformations()
 
             _transformation_servers = self.transformation_servers.get()
-            transformations: list[np.typing.NDArray[np.float32]] = []
-            new_points: list[tuple[int, np.typing.NDArray[np.float32]]] = []
+
+            transformations: list[NDArrayFloat32] = []
+
+            new_points: list[tuple[int, NDArrayFloat32]] = []
 
             for server in _transformation_servers:
                 transformations.append(
@@ -105,7 +110,7 @@ class FractalDesigner:
                 )
 
             if input.radio_mode.get() == "discrete":
-                old_points: list[tuple[int, np.typing.NDArray[np.float32]]] = [
+                old_points: list[tuple[int, NDArrayFloat32]] = [
                     (0, np.array([[0, 0, 1], [0, 1, 1], [1, 1, 1], [1, 0, 1]]).T)
                 ]
 
@@ -118,7 +123,7 @@ class FractalDesigner:
                         old_points = new_points
 
             elif input.radio_mode.get() == "continuous" and transformations:
-                point: np.typing.NDArray[np.float32] = np.array([0, 0, 1]).T
+                point: NDArrayFloat32 = np.array([0, 0, 1]).T
                 weights: list[float] = []
 
                 for server in _transformation_servers:
@@ -174,19 +179,25 @@ class FractalDesigner:
 
             elif input.radio_mode.get() == "continuous":
                 transformations_plotted: set[int] = set()
+                x: NDArrayFloat32 = np.empty([len(new_points)], dtype=np.float32)
+                y: NDArrayFloat32 = np.empty([len(new_points)], dtype=np.float32)
+                indices: np.typing.NDArray[np.int32] = np.zeros([len(new_points)], dtype=np.int32)
 
-                for idx, transformation in new_points:
-                    plot.widget.add_scatter(  # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
-                        x=[transformation[0]],
-                        y=[transformation[1]],
-                        marker_color=px.colors.qualitative.G10[idx],
-                        name=f"Transformation {idx}",
-                        legendgroup=f"Transformation {idx}",
+                for i, (idx, transformation) in enumerate(new_points):
+                    x[i] = transformation[0]
+                    y[i] = transformation[1]
+                    indices[i] = int(idx)
+
+                unique_indices: set[int] = set(indices)
+                
+                for index in unique_indices:
+                    plot.widget.add_scatter( # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
+                        x=x[np.where(indices == index)],
+                        y=y[np.where(indices == index)],
+                        marker_color=px.colors.qualitative.G10[index],
+                        name=f"Transformation {index}",
                         mode="markers",
-                        showlegend=True if idx not in transformations_plotted else False
                     )
-
-                    transformations_plotted.add(idx)
 
         @render.ui
         @reactive.event(input.add_transformation)
