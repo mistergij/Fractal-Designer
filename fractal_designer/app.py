@@ -12,6 +12,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
+from ipywidgets import BoundedFloatText, GridBox, Layout, TwoByTwoLayout  # pyright: ignore [reportMissingTypeStubs]
 from shiny import App, Inputs, Outputs, Session, module, reactive, render, ui
 from shinywidgets import output_widget, render_widget
 
@@ -56,15 +57,20 @@ class FractalDesigner:
         f: float = 0,
         p: float = 0,
     ) -> ui.Tag:
+        # return ui.card(
+        #     ui.card_header(f"Transformation {transformation_num}"),
+        #     ui.input_numeric("a", "a", a, min=-2, max=2, step=0.1, update_on="blur"),
+        #     ui.input_numeric("b", "b", b, min=-2, max=2, step=0.1, update_on="blur"),
+        #     ui.input_numeric("c", "c", c, min=-2, max=2, step=0.1, update_on="blur"),
+        #     ui.input_numeric("d", "d", d, min=-2, max=2, step=0.1, update_on="blur"),
+        #     ui.input_numeric("e", "e", e, min=-2, max=2, step=0.1, update_on="blur"),
+        #     ui.input_numeric("f", "f", f, min=-2, max=2, step=0.1, update_on="blur"),
+        #     ui.input_numeric("p", "p", p, min=-2, max=2, step=0.1, update_on="blur"),
+        #     id="transformation",
+        # )
         return ui.card(
             ui.card_header(f"Transformation {transformation_num}"),
-            ui.input_numeric("a", "a", a, min=-2, max=2, step=0.1, update_on="blur"),
-            ui.input_numeric("b", "b", b, min=-2, max=2, step=0.1, update_on="blur"),
-            ui.input_numeric("c", "c", c, min=-2, max=2, step=0.1, update_on="blur"),
-            ui.input_numeric("d", "d", d, min=-2, max=2, step=0.1, update_on="blur"),
-            ui.input_numeric("e", "e", e, min=-2, max=2, step=0.1, update_on="blur"),
-            ui.input_numeric("f", "f", f, min=-2, max=2, step=0.1, update_on="blur"),
-            ui.input_numeric("p", "p", p, min=-2, max=2, step=0.1, update_on="blur"),
+            output_widget("matrix_input"),
             id="transformation",
         )
 
@@ -132,7 +138,7 @@ class FractalDesigner:
                 if np.sum(np.array(weights)) != 1:
                     weights = [1 / len(weights) for _ in range(len(weights))]
                     m = ui.modal(
-                        "Probabilities do not add up to one. Automatically corrected.",
+                        "Probabilities adjusted to add up to one.",
                         title="Probability Error",
                         easy_close=True,
                     )
@@ -189,9 +195,9 @@ class FractalDesigner:
                     indices[i] = int(idx)
 
                 unique_indices: set[int] = set(indices)
-                
+
                 for index in unique_indices:
-                    plot.widget.add_scatter( # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
+                    plot.widget.add_scatter(  # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
                         x=x[np.where(indices == index)],
                         y=y[np.where(indices == index)],
                         marker_color=px.colors.qualitative.G10[index],
@@ -239,6 +245,18 @@ class FractalDesigner:
                 )
                 self.transformation_servers.set(_transformation_servers)
 
+        @render_widget
+        def matrix_input():
+            abcd_matrix = TwoByTwoLayout(
+                top_left = BoundedFloatText(value=0.5, min=-2.0, max=2.0, step=0.1),
+                top_right = BoundedFloatText(value=0, min=-2.0, max=2.0, step=0.1),
+                bottom_left = BoundedFloatText(value=0, min = -2.0, max = 2.0, step = 0.1),
+                bottom_right = BoundedFloatText(value=0.5, min = -2.0, max = 2.0, step = 0.1)
+            )
+            items = [BoundedFloatText(value=0.5, min=-2.0, max=2.0, step=0.1),BoundedFloatText(value=0.5, min=-2.0, max=2.0, step=0.1)]
+            ef_matrix = GridBox(
+                items, layout = Layout()
+            )
     def get_server(self) -> Callable[[Inputs, Outputs, Session], None]:
         return self.server
 
