@@ -12,7 +12,6 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-from ipywidgets import BoundedFloatText, GridBox, Layout, TwoByTwoLayout  # pyright: ignore [reportMissingTypeStubs]
 from shiny import App, Inputs, Outputs, Session, module, reactive, render, ui
 from shinywidgets import output_widget, render_widget
 
@@ -24,8 +23,48 @@ class FractalDesigner:
     def __init__(self):
         self.app_ui = ui.page_sidebar(
             ui.sidebar(
+                ui.p(
+                    """
+                            $$
+                                \\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix} \\times
+                                \\begin{bmatrix} x \\\\ y \\end{bmatrix} +
+                                \\begin{bmatrix} e \\\\ f \\end{bmatrix}
+                            $$
+                        """
+                ),
                 ui.output_ui("create_transformation"),
             ),
+            ui.tags.head(
+                ui.tags.link(
+                    rel="stylesheet",
+                    href="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css",
+                    integrity="sha384-WcoG4HRXMzYzfCgiyfrySxx90XSl2rxY5mnVY5TwtWE6KLrArNKn0T/mOgNL0Mmi",
+                    crossorigin="anonymous",
+                ),
+                ui.tags.script(
+                    src="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js",
+                    integrity="sha384-J+9dG2KMoiR9hqcFao0IBLwxt6zpcyN68IgwzsCSkbreXUjmNVRhPFTssqdSGjwQ",
+                    crossorigin="anonymous",
+                ),
+                ui.tags.script(
+                    src="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/contrib/auto-render.min.js",
+                    integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh",
+                    crossorigin="anonymous",
+                ),
+                ui.tags.script("""
+                    document.addEventListener('DOMContentLoaded', function() {
+                        renderMathInElement(document.body, {
+                            delimiters: [
+                                {left: "$$", right: "$$", display: true},
+                                {left: "\\[", right: "\\]", display: true},
+                                {left: "$", right: "$", display: false},
+                                {left: "\\(", right: "\\)", display: false}
+                            ]
+                        });
+                    });
+                """),
+            ),
+            ui.head_content(ui.include_css("fractal_designer/app.css")),
             output_widget("plot"),
             ui.input_radio_buttons("radio_mode", "Mode:", {"discrete": "Discrete", "continuous": "Continuous"}),
             ui.panel_conditional(
@@ -57,22 +96,42 @@ class FractalDesigner:
         f: float = 0,
         p: float = 0,
     ) -> ui.Tag:
-        # return ui.card(
-        #     ui.card_header(f"Transformation {transformation_num}"),
-        #     ui.input_numeric("a", "a", a, min=-2, max=2, step=0.1, update_on="blur"),
-        #     ui.input_numeric("b", "b", b, min=-2, max=2, step=0.1, update_on="blur"),
-        #     ui.input_numeric("c", "c", c, min=-2, max=2, step=0.1, update_on="blur"),
-        #     ui.input_numeric("d", "d", d, min=-2, max=2, step=0.1, update_on="blur"),
-        #     ui.input_numeric("e", "e", e, min=-2, max=2, step=0.1, update_on="blur"),
-        #     ui.input_numeric("f", "f", f, min=-2, max=2, step=0.1, update_on="blur"),
-        #     ui.input_numeric("p", "p", p, min=-2, max=2, step=0.1, update_on="blur"),
-        #     id="transformation",
-        # )
         return ui.card(
-            ui.card_header(f"Transformation {transformation_num}"),
-            output_widget("matrix_input"),
+            ui.div(f"Transformation {transformation_num}", class_="card-title"),
+            ui.div(
+                ui.div(
+                    ui.input_numeric("a", "a", a, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    class_="input-a",
+                ),
+                ui.div(
+                    ui.input_numeric("b", "b", b, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    class_="input-b",
+                ),
+                ui.div(
+                    ui.input_numeric("c", "c", c, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    class_="input-c",
+                ),
+                ui.div(
+                    ui.input_numeric("d", "d", d, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    class_="input-d",
+                ),
+                ui.div(
+                    ui.input_numeric("e", "e", e, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    class_="input-e",
+                ),
+                ui.div(
+                    ui.input_numeric("f", "f", f, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    class_="input-f",
+                ),
+                ui.div(
+                    ui.input_numeric("p", "p", p, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    class_="input-p",
+                ),
+                class_="matrix",
+            ),
+            style="max-width: 25em",
             id="transformation",
-        )
+        ).add_class("wrapper")
 
     @staticmethod
     @module.server
@@ -245,18 +304,6 @@ class FractalDesigner:
                 )
                 self.transformation_servers.set(_transformation_servers)
 
-        @render_widget
-        def matrix_input():
-            abcd_matrix = TwoByTwoLayout(
-                top_left = BoundedFloatText(value=0.5, min=-2.0, max=2.0, step=0.1),
-                top_right = BoundedFloatText(value=0, min=-2.0, max=2.0, step=0.1),
-                bottom_left = BoundedFloatText(value=0, min = -2.0, max = 2.0, step = 0.1),
-                bottom_right = BoundedFloatText(value=0.5, min = -2.0, max = 2.0, step = 0.1)
-            )
-            items = [BoundedFloatText(value=0.5, min=-2.0, max=2.0, step=0.1),BoundedFloatText(value=0.5, min=-2.0, max=2.0, step=0.1)]
-            ef_matrix = GridBox(
-                items, layout = Layout()
-            )
     def get_server(self) -> Callable[[Inputs, Outputs, Session], None]:
         return self.server
 
