@@ -44,6 +44,7 @@
 .input-p {
     grid-area: 1 / 4 / 3 / 5;
     margin: 5px !important;
+    display: "block" !important;
 }
 
 .shiny-input-container {
