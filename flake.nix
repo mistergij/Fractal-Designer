@@ -65,7 +65,6 @@
           pkgs.mkShell {
             name = "lab-5";
             packages = with pkgs; [
-              css-html-js-minify
               gcc
               kdePackages.qtwayland
               libffi
@@ -73,6 +72,7 @@
               patchedpython
               qtcreator
               ruff
+              terser
               unzip
               uv
             ];

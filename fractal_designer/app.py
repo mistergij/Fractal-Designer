@@ -1,7 +1,8 @@
 """
-Program to interactively display and edit fractals. All code was designed by Alexander Kral, with the
+Program to interactively display and edit fractals. All python code was designed by Alexander Kral, with the
 mathematical algorithm for random iteration adapted from "Fractals Everywhere" to enable specifying
-probabilities (Barnsley, 1993, pp. 89-90).
+probabilities (Barnsley, 1993, pp. 89-90). app.css and app.js were also designed by Alexander Kral, but
+katex.css, katex.js, and auto-render.js are open-source libraries incorporated for aesthetic purposes.
 Author: Alexander Kral
 """
 
@@ -35,7 +36,7 @@ class FractalDesigner:
                 ui.output_ui("create_transformation"),
                 width=500,
             ),
-            ui.tags.head(
+            ui.head_content(
                 ui.tags.link(
                     rel="stylesheet",
                     href="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.css",
@@ -46,26 +47,17 @@ class FractalDesigner:
                     src="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex.min.js",
                     integrity="sha384-J+9dG2KMoiR9hqcFao0IBLwxt6zpcyN68IgwzsCSkbreXUjmNVRhPFTssqdSGjwQ",
                     crossorigin="anonymous",
+                    defer=True,
                 ),
                 ui.tags.script(
                     src="https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/contrib/auto-render.min.js",
                     integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh",
                     crossorigin="anonymous",
+                    defer=True,
                 ),
-                ui.tags.script("""
-                    document.addEventListener('DOMContentLoaded', function() {
-                        renderMathInElement(document.body, {
-                            delimiters: [
-                                {left: "$$", right: "$$", display: true},
-                                {left: "\\[", right: "\\]", display: true},
-                                {left: "$", right: "$", display: false},
-                                {left: "\\(", right: "\\)", display: false}
-                            ]
-                        });
-                    });
-                """),
+                ui.include_js("fractal_designer/js/app.js", defer=True),
+                ui.include_css("fractal_designer/css/app.min.css"),
             ),
-            ui.head_content(ui.include_css("fractal_designer/app.css")),
             output_widget("plot").add_class("main-display"),
             ui.div(
                 ui.input_radio_buttons("radio_mode", "Mode:", {"discrete": "Discrete", "continuous": "Continuous"}),
@@ -99,6 +91,7 @@ class FractalDesigner:
         )
         self.num_added = 0
         self.num_removed = 0
+
     min_transformation = -2.00
     max_transformation = 2.00
 
@@ -118,31 +111,94 @@ class FractalDesigner:
             ui.div(f"Transformation {transformation_num}", class_="card-title"),
             ui.div(
                 ui.div(
-                    ui.input_numeric("a", "a", a, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric(
+                        "a",
+                        "a",
+                        a,
+                        min=FractalDesigner.min_transformation,
+                        max=FractalDesigner.max_transformation,
+                        step=0.01,
+                        update_on="blur",
+                        width="10ch",
+                    ),
                     class_="input-a",
                 ),
                 ui.div(
-                    ui.input_numeric("b", "b", b, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric(
+                        "b",
+                        "b",
+                        b,
+                        min=FractalDesigner.min_transformation,
+                        max=FractalDesigner.max_transformation,
+                        step=0.01,
+                        update_on="blur",
+                        width="10ch",
+                    ),
                     class_="input-b",
                 ),
                 ui.div(
-                    ui.input_numeric("c", "c", c, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric(
+                        "c",
+                        "c",
+                        c,
+                        min=FractalDesigner.min_transformation,
+                        max=FractalDesigner.max_transformation,
+                        step=0.01,
+                        update_on="blur",
+                        width="10ch",
+                    ),
                     class_="input-c",
                 ),
                 ui.div(
-                    ui.input_numeric("d", "d", d, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric(
+                        "d",
+                        "d",
+                        d,
+                        min=FractalDesigner.min_transformation,
+                        max=FractalDesigner.max_transformation,
+                        step=0.01,
+                        update_on="blur",
+                        width="10ch",
+                    ),
                     class_="input-d",
                 ),
                 ui.div(
-                    ui.input_numeric("e", "e", e, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric(
+                        "e",
+                        "e",
+                        e,
+                        min=FractalDesigner.min_transformation,
+                        max=FractalDesigner.max_transformation,
+                        step=0.01,
+                        update_on="blur",
+                        width="10ch",
+                    ),
                     class_="input-e",
                 ),
                 ui.div(
-                    ui.input_numeric("f", "f", f, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric(
+                        "f",
+                        "f",
+                        f,
+                        min=FractalDesigner.min_transformation,
+                        max=FractalDesigner.max_transformation,
+                        step=0.01,
+                        update_on="blur",
+                        width="10ch",
+                    ),
                     class_="input-f",
                 ),
                 ui.div(
-                    ui.input_numeric("p", "p", p, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric(
+                        "p",
+                        "p",
+                        p,
+                        min=FractalDesigner.min_transformation,
+                        max=FractalDesigner.max_transformation,
+                        step=0.01,
+                        update_on="blur",
+                        width="10ch",
+                    ),
                     class_="input-p",
                 ),
                 class_="matrix",
@@ -187,9 +243,11 @@ class FractalDesigner:
                         f"Parameter {name} for Transformation {server_number} is invalid. Valid ranges are between {FractalDesigner.min_transformation} and {FractalDesigner.max_transformation}",
                         title="Range Error",
                         easy_close=True,
-                        )
+                    )
                     ui.modal_show(m)
-                    raise ValueError(f"Parameter {name} for Transformation {server_number} is invalid. Valid ranges are between {FractalDesigner.min_transformation} and {FractalDesigner.max_transformation}")
+                    raise ValueError(
+                        f"Parameter {name} for Transformation {server_number} is invalid. Valid ranges are between {FractalDesigner.min_transformation} and {FractalDesigner.max_transformation}"
+                    )
                 return value
 
             for server_number, server in enumerate(_transformation_servers):
@@ -232,18 +290,18 @@ class FractalDesigner:
 
                 for server in _transformation_servers:
                     try:
-                        weights.append(validate_value("p",server.get()[6]()))
+                        weights.append(validate_value("p", server.get()[6]()))
                     except ValueError:
                         return
 
                 if np.sum(np.array(weights)) != 1:
-                    weights = [1 / len(weights) for _ in range(len(weights))]
                     m = ui.modal(
-                        "Probabilities adjusted to add up to one.",
+                        "Probabilities do not add up to one. Please check your input and try again.",
                         title="Probability Error",
                         easy_close=True,
                     )
                     ui.modal_show(m)
+                    return
 
                 for _ in range(input.iterations_continuous()):
                     idx = range(len(transformations))
@@ -262,9 +320,9 @@ class FractalDesigner:
                 layout_width=500,
                 layout_height=500,
                 layout_xaxis_range=[0, 1],
-                layout_xaxis_dtick=0.1,
+                layout_xaxis_tickmode="auto",
                 layout_yaxis_range=[0, 1],
-                layout_yaxis_dtick=0.1,
+                layout_yaxis_tickmode="auto",
                 layout_xaxis_autorange=False,
                 layout_yaxis_autorange=False,
                 layout_legend_orientation="h",
@@ -287,10 +345,10 @@ class FractalDesigner:
 
                 for i in range(_num_transformations):
                     polygon_points: list[NDArrayFloat32] = []
-                    
+
                     for j in range(i, len(new_points), _num_transformations):
                         polygon_points.append(new_points[j][1])
-                    
+
                     x_list_discrete: list[NDArrayFloat32 | None] = []
                     y_list_discrete: list[NDArrayFloat32 | None] = []
 
@@ -303,18 +361,18 @@ class FractalDesigner:
 
                     if x_list_discrete:
                         x_list_discrete.pop()
-                    
+
                     if y_list_discrete:
                         y_list_discrete.pop()
 
-                    plot.widget.add_scatter( # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
+                    plot.widget.add_scatter(  # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
                         x=x_list_discrete,
                         y=y_list_discrete,
                         fill="toself",
                         fillcolor=px.colors.qualitative.G10[i],
                         name=f"Transformation {i}",
                         legendgroup=f"Transformation {i}",
-                        line_color=px.colors.qualitative.G10[i]
+                        line_color=px.colors.qualitative.G10[i],
                     )
 
             elif input.radio_mode.get() == "continuous" and new_points:
@@ -378,9 +436,7 @@ class FractalDesigner:
                         )
 
                     transformation_cards.append(
-                        self.transformation_card(
-                            f"transformation_{_num_transformations}", _num_transformations
-                        )
+                        self.transformation_card(f"transformation_{_num_transformations}", _num_transformations)
                     )
 
                 self.num_transformations.set(_num_transformations + 1)
