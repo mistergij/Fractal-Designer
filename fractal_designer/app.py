@@ -41,13 +41,13 @@ class FractalDesigner:
                 ui.tags.script(
                     src="https://code.jquery.com/jquery-3.7.1.min.js",
                     integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=",
-                    crossorigin="anonymous"
+                    crossorigin="anonymous",
                 ),
                 ui.tags.script(
                     src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js",
                     integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=",
                     crossorigin="anonymous",
-                    defer = True
+                    defer=True,
                 ),
                 ui.tags.link(
                     rel="stylesheet",
@@ -118,7 +118,7 @@ class FractalDesigner:
         e: float = 0,
         f: float = 0,
         p: float = 0,
-        hide_p: bool = True
+        hide_p: bool = True,
     ) -> ui.Tag:
         return ui.card(
             ui.div(f"Transformation {transformation_num}", class_="card-title"),
@@ -250,7 +250,17 @@ class FractalDesigner:
 
             new_points: list[tuple[int, NDArrayFloat32]] = []
 
-            def validate_value(name: str, value: float) -> float:
+            def validate_value(name: str, value: int | float) -> int | float:
+                try:
+                    assert isinstance(value, (int, float))
+                except AssertionError:
+                    m = ui.modal(
+                        f"Parameter {name} for Transformation {server_number} is invalid. Valid values are numbers that range between {FractalDesigner.min_transformation} and {FractalDesigner.max_transformation}",
+                        title="Type Error",
+                        easy_close=True,
+                    )
+                    ui.modal_show(m)
+                    raise ValueError
                 if (value < FractalDesigner.min_transformation) or (value > FractalDesigner.max_transformation):
                     m = ui.modal(
                         f"Parameter {name} for Transformation {server_number} is invalid. Valid ranges are between {FractalDesigner.min_transformation} and {FractalDesigner.max_transformation}",
@@ -258,9 +268,7 @@ class FractalDesigner:
                         easy_close=True,
                     )
                     ui.modal_show(m)
-                    raise ValueError(
-                        f"Parameter {name} for Transformation {server_number} is invalid. Valid ranges are between {FractalDesigner.min_transformation} and {FractalDesigner.max_transformation}"
-                    )
+                    raise ValueError
                 return value
 
             for server_number, server in enumerate(_transformation_servers):
@@ -283,47 +291,61 @@ class FractalDesigner:
                         ]
                     )
                 )
+            
+            try:
+                if input.radio_mode.get() == "discrete":
+                    old_points: list[tuple[int, NDArrayFloat32]] = [
+                        (0, np.array([[0, 0, 1], [0, 1, 1], [1, 1, 1], [1, 0, 1]]).T)
+                    ]
 
-            if input.radio_mode.get() == "discrete":
-                old_points: list[tuple[int, NDArrayFloat32]] = [
-                    (0, np.array([[0, 0, 1], [0, 1, 1], [1, 1, 1], [1, 0, 1]]).T)
-                ]
+                    if input.iterations_discrete() > 8:
+                        raise TypeError
+            
+                    for _ in range(input.iterations_discrete()):
+                        new_points = []
+                        for polygon in old_points:
+                            for i, transformation in enumerate(transformations):
+                                new_points.append((i, transformation @ polygon[1]))
 
-                for _ in range(input.iterations_discrete()):
-                    new_points = []
-                    for polygon in old_points:
-                        for i, transformation in enumerate(transformations):
-                            new_points.append((i, transformation @ polygon[1]))
+                            old_points = new_points
 
-                        old_points = new_points
+                elif input.radio_mode.get() == "continuous" and transformations:
+                    point: NDArrayFloat32 = np.array([0, 0, 1]).T
+                    weights: list[float] = []
 
-            elif input.radio_mode.get() == "continuous" and transformations:
-                point: NDArrayFloat32 = np.array([0, 0, 1]).T
-                weights: list[float] = []
+                    if input.iterations_continuous() > 5000:
+                        raise TypeError
 
-                for server in _transformation_servers:
-                    try:
-                        weights.append(validate_value("p", server.get()[6]()))
-                    except ValueError:
+                    for server in _transformation_servers:
+                        try:
+                            weights.append(validate_value("p", server.get()[6]()))
+                        except ValueError:
+                            return
+
+                    if np.sum(np.array(weights)) != 1:
+                        m = ui.modal(
+                            "Probabilities do not add up to one. Please check your input and try again.",
+                            title="Probability Error",
+                            easy_close=True,
+                        )
+                        ui.modal_show(m)
                         return
 
-                if np.sum(np.array(weights)) != 1:
-                    m = ui.modal(
-                        "Probabilities do not add up to one. Please check your input and try again.",
-                        title="Probability Error",
-                        easy_close=True,
-                    )
-                    ui.modal_show(m)
-                    return
-
-                for _ in range(input.iterations_continuous()):
-                    idx = range(len(transformations))
-                    transformation_idx = random.choices(idx, weights=weights)[0]
-                    transformation = transformations[transformation_idx]
-                    point = transformation @ point
-                    point = point.T
-                    new_points.append((transformation_idx, point))
-
+                    for _ in range(input.iterations_continuous()):
+                        idx = range(len(transformations))
+                        transformation_idx = random.choices(idx, weights=weights)[0]
+                        transformation = transformations[transformation_idx]
+                        point = transformation @ point
+                        point = point.T
+                        new_points.append((transformation_idx, point))
+            except TypeError:
+                m = ui.modal(
+                    f"The number of iterations is invalid. Valid values are numbers that range between 1 and {8 if input.radio_mode.get() == "discrete" else 5000}",
+                    title="Type Error",
+                    easy_close=True,
+                )
+                ui.modal_show(m)
+                return
             return new_points
 
         @render_widget  # pyright: ignore [reportArgumentType]
@@ -435,7 +457,9 @@ class FractalDesigner:
                     return transformation_cards
             elif input.add_transformation() > self.num_added:
                 if _num_transformations == 0:
-                    transformation_cards.append(FractalDesigner.transformation_card("transformation_0", 0, hide_p=hide_p))
+                    transformation_cards.append(
+                        FractalDesigner.transformation_card("transformation_0", 0, hide_p=hide_p)
+                    )
                 else:
                     for i in range(_num_transformations):
                         a = _transformation_servers[i].get()[0].get()
@@ -450,7 +474,9 @@ class FractalDesigner:
                         )
 
                     transformation_cards.append(
-                        self.transformation_card(f"transformation_{_num_transformations}", _num_transformations, hide_p=hide_p)
+                        self.transformation_card(
+                            f"transformation_{_num_transformations}", _num_transformations, hide_p=hide_p
+                        )
                     )
 
                 self.num_transformations.set(_num_transformations + 1)
