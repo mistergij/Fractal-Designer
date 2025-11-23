@@ -99,15 +99,17 @@ class FractalDesigner:
         )
         self.num_added = 0
         self.num_removed = 0
+    min_transformation = -2.00
+    max_transformation = 2.00
 
     @staticmethod
     @module.ui
     def transformation_card(
         transformation_num: int = 0,
-        a: float = 0.5,
+        a: float = 0.50,
         b: float = 0,
         c: float = 0,
-        d: float = 0.5,
+        d: float = 0.50,
         e: float = 0,
         f: float = 0,
         p: float = 0,
@@ -116,31 +118,31 @@ class FractalDesigner:
             ui.div(f"Transformation {transformation_num}", class_="card-title"),
             ui.div(
                 ui.div(
-                    ui.input_numeric("a", "a", a, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric("a", "a", a, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
                     class_="input-a",
                 ),
                 ui.div(
-                    ui.input_numeric("b", "b", b, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric("b", "b", b, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
                     class_="input-b",
                 ),
                 ui.div(
-                    ui.input_numeric("c", "c", c, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric("c", "c", c, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
                     class_="input-c",
                 ),
                 ui.div(
-                    ui.input_numeric("d", "d", d, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric("d", "d", d, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
                     class_="input-d",
                 ),
                 ui.div(
-                    ui.input_numeric("e", "e", e, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric("e", "e", e, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
                     class_="input-e",
                 ),
                 ui.div(
-                    ui.input_numeric("f", "f", f, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric("f", "f", f, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
                     class_="input-f",
                 ),
                 ui.div(
-                    ui.input_numeric("p", "p", p, min=-2, max=2, step=0.01, update_on="blur", width="10ch"),
+                    ui.input_numeric("p", "p", p, min=FractalDesigner.min_transformation, max=FractalDesigner.max_transformation, step=0.01, update_on="blur", width="10ch"),
                     class_="input-p",
                 ),
                 class_="matrix",
@@ -170,7 +172,7 @@ class FractalDesigner:
 
     def server(self, input: Inputs, output: Outputs, session: Session):
         @reactive.calc
-        def compute_transformation() -> list[tuple[int, NDArrayFloat32]]:
+        def compute_transformation() -> list[tuple[int, NDArrayFloat32]] | None:
             input.graph_transformations()
 
             _transformation_servers = self.transformation_servers.get()
@@ -179,12 +181,33 @@ class FractalDesigner:
 
             new_points: list[tuple[int, NDArrayFloat32]] = []
 
-            for server in _transformation_servers:
+            def validate_value(name: str, value: float) -> float:
+                if (value < FractalDesigner.min_transformation) or (value > FractalDesigner.max_transformation):
+                    m = ui.modal(
+                        f"Parameter {name} for Transformation {server_number} is invalid. Valid ranges are between {FractalDesigner.min_transformation} and {FractalDesigner.max_transformation}",
+                        title="Range Error",
+                        easy_close=True,
+                        )
+                    ui.modal_show(m)
+                    raise ValueError(f"Parameter {name} for Transformation {server_number} is invalid. Valid ranges are between {FractalDesigner.min_transformation} and {FractalDesigner.max_transformation}")
+                return value
+
+            for server_number, server in enumerate(_transformation_servers):
+                try:
+                    a = validate_value("a", server.get()[0]())
+                    b = validate_value("b", server.get()[1]())
+                    c = validate_value("c", server.get()[2]())
+                    d = validate_value("d", server.get()[3]())
+                    e = validate_value("e", server.get()[4]())
+                    f = validate_value("f", server.get()[5]())
+                except ValueError:
+                    return
+
                 transformations.append(
                     np.array(
                         [
-                            [server.get()[0](), server.get()[1](), server.get()[4]()],
-                            [server.get()[2](), server.get()[3](), server.get()[5]()],
+                            [a, b, e],
+                            [c, d, f],
                             [0, 0, 1],
                         ]
                     )
@@ -208,7 +231,10 @@ class FractalDesigner:
                 weights: list[float] = []
 
                 for server in _transformation_servers:
-                    weights.append(server.get()[6]())
+                    try:
+                        weights.append(validate_value("p",server.get()[6]()))
+                    except ValueError:
+                        return
 
                 if np.sum(np.array(weights)) != 1:
                     weights = [1 / len(weights) for _ in range(len(weights))]
@@ -254,24 +280,44 @@ class FractalDesigner:
             plot.widget.data = []  # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
             _num_transformations = self.num_transformations.get()
 
-            if input.radio_mode.get() == "discrete":
-                transformations_plotted: set[int] = set()
+            if input.radio_mode.get() == "discrete" and new_points:
+                # transformations_plotted: set[int] = set()
 
-                for idx, transformation in new_points:
-                    plot.widget.add_scatter(  # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
-                        x=transformation[0, :],
-                        y=transformation[1, :],
+                indices: np.typing.NDArray[np.int32] = np.zeros([len(new_points)], dtype=np.int32)
+
+                for i in range(_num_transformations):
+                    polygon_points: list[NDArrayFloat32] = []
+                    
+                    for j in range(i, len(new_points), _num_transformations):
+                        polygon_points.append(new_points[j][1])
+                    
+                    x_list_discrete: list[NDArrayFloat32 | None] = []
+                    y_list_discrete: list[NDArrayFloat32 | None] = []
+
+                    for polygon in polygon_points:
+                        x_list_discrete.extend(polygon[0, :])
+                        x_list_discrete.append(None)
+
+                        y_list_discrete.extend(polygon[1, :])
+                        y_list_discrete.append(None)
+
+                    if x_list_discrete:
+                        x_list_discrete.pop()
+                    
+                    if y_list_discrete:
+                        y_list_discrete.pop()
+
+                    plot.widget.add_scatter( # pyright: ignore [reportOptionalMemberAccess, reportUnknownMemberType]
+                        x=x_list_discrete,
+                        y=y_list_discrete,
                         fill="toself",
-                        fillcolor=px.colors.qualitative.G10[idx],
-                        name=f"Transformation {idx}",
-                        legendgroup=f"Transformation {idx}",
-                        showlegend=True if idx not in transformations_plotted else False,
+                        fillcolor=px.colors.qualitative.G10[i],
+                        name=f"Transformation {i}",
+                        legendgroup=f"Transformation {i}",
+                        line_color=px.colors.qualitative.G10[i]
                     )
 
-                    transformations_plotted.add(idx)
-
-            elif input.radio_mode.get() == "continuous":
-                transformations_plotted: set[int] = set()
+            elif input.radio_mode.get() == "continuous" and new_points:
                 x: NDArrayFloat32 = np.empty([len(new_points)], dtype=np.float32)
                 y: NDArrayFloat32 = np.empty([len(new_points)], dtype=np.float32)
                 indices: np.typing.NDArray[np.int32] = np.zeros([len(new_points)], dtype=np.int32)
@@ -332,7 +378,9 @@ class FractalDesigner:
                         )
 
                     transformation_cards.append(
-                        FractalDesigner.transformation_card(f"transformation_{_num_transformations}", _num_transformations)
+                        self.transformation_card(
+                            f"transformation_{_num_transformations}", _num_transformations
+                        )
                     )
 
                 self.num_transformations.set(_num_transformations + 1)
