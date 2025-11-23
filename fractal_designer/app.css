@@ -2,7 +2,11 @@
     text-align: center !important;
     display: block;
     width: 100%;
-    margin: 0px !important;
+    margin: auto;
+}
+
+.card {
+    margin: auto;
 }
 
 .matrix {
@@ -44,4 +48,14 @@
 
 .shiny-input-container {
     margin: 0
+}
+
+.btn {
+    margin-top: 5px
+}
+
+.main-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

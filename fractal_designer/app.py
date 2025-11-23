@@ -33,6 +33,7 @@ class FractalDesigner:
                         """
                 ),
                 ui.output_ui("create_transformation"),
+                width=500,
             ),
             ui.tags.head(
                 ui.tags.link(
@@ -65,33 +66,48 @@ class FractalDesigner:
                 """),
             ),
             ui.head_content(ui.include_css("fractal_designer/app.css")),
-            output_widget("plot"),
-            ui.input_radio_buttons("radio_mode", "Mode:", {"discrete": "Discrete", "continuous": "Continuous"}),
+            output_widget("plot").add_class("main-display"),
+            ui.div(
+                ui.input_radio_buttons("radio_mode", "Mode:", {"discrete": "Discrete", "continuous": "Continuous"}),
+                class_="main-display",
+            ),
             ui.panel_conditional(
                 "input.radio_mode === 'discrete'",
-                ui.input_numeric("iterations_discrete", "Number of Iterations", 1, min=1, max=8, update_on="blur"),
-            ),
+                ui.input_numeric(
+                    "iterations_discrete", "Number of Iterations:", 1, min=1, max=8, update_on="blur", width="20ch"
+                ),
+            ).add_class("main-display"),
             ui.panel_conditional(
                 "input.radio_mode === 'continuous'",
-                ui.input_numeric("iterations_continuous", "Number of Iterations", 1, min=1, max=5000, update_on="blur"),
+                ui.input_numeric(
+                    "iterations_continuous", "Number of Iterations:", 1, min=1, max=5000, update_on="blur", width="20ch"
+                ),
+            ).add_class("main-display"),
+            ui.div(ui.input_action_button("add_transformation", "Add Transformation"), class_="main-display"),
+            ui.div(
+                ui.input_action_button("remove_transformation", "Remove Last Transformation"), class_="main-display"
             ),
-            ui.input_action_button("add_transformation", "Add Transformation"),
-            ui.input_action_button("graph_transformations", "Graph Transformations"),
+            ui.div(
+                ui.input_action_button("graph_transformations", "Graph Transformations").add_class("main-display"),
+                class_="main-display",
+            ),
         )
 
         self.num_transformations: reactive.Value[int] = reactive.value(0)
         self.transformation_servers: reactive.Value[list[reactive.Value[list[reactive.Value[float]]]]] = reactive.value(
             []
         )
+        self.num_added = 0
+        self.num_removed = 0
 
     @staticmethod
     @module.ui
     def transformation_card(
         transformation_num: int = 0,
-        a: float = 1,
+        a: float = 0.5,
         b: float = 0,
         c: float = 0,
-        d: float = 1,
+        d: float = 0.5,
         e: float = 0,
         f: float = 0,
         p: float = 0,
@@ -215,9 +231,21 @@ class FractalDesigner:
 
         @render_widget  # pyright: ignore [reportArgumentType]
         def plot():
-            return go.Figure(
-                layout_xaxis_range=[0, 1], layout_yaxis_range=[0, 1], layout_xaxis_dtick=0.1, layout_yaxis_dtick=0.1
+            figure = go.Figure(
+                layout_autosize=False,
+                layout_width=500,
+                layout_height=500,
+                layout_xaxis_range=[0, 1],
+                layout_xaxis_dtick=0.1,
+                layout_yaxis_range=[0, 1],
+                layout_yaxis_dtick=0.1,
+                layout_xaxis_autorange=False,
+                layout_yaxis_autorange=False,
+                layout_legend_orientation="h",
             )
+            # figure.update_layout(autosize=False, width=500, height=500, xaxis_range = [0, 1], yaxis_range = [0, 1], xaxis_autorange = False)
+            # figure.update_yaxes(scaleanchor="x", scaleratio=1)
+            return figure
 
         @reactive.effect
         @reactive.event(input.graph_transformations)
@@ -265,36 +293,53 @@ class FractalDesigner:
                     )
 
         @render.ui
-        @reactive.event(input.add_transformation)
+        @reactive.event(input.add_transformation, input.remove_transformation)
         def create_transformation():
             _num_transformations = self.num_transformations.get()
             _transformation_servers = self.transformation_servers.get()
 
             transformation_cards: list[ui.Tag] = []
 
-            if _num_transformations == 0:
-                transformation_cards.append(FractalDesigner.transformation_card("transformation_0", 0))
-            else:
-                for i in range(_num_transformations):
-                    a = _transformation_servers[i].get()[0].get()
-                    b = _transformation_servers[i].get()[1].get()
-                    c = _transformation_servers[i].get()[2].get()
-                    d = _transformation_servers[i].get()[3].get()
-                    e = _transformation_servers[i].get()[4].get()
-                    f = _transformation_servers[i].get()[5].get()
-                    p = _transformation_servers[i].get()[6].get()
+            if input.remove_transformation() > self.num_removed:
+                if _num_transformations > 0:
+                    for i in range(_num_transformations - 1):
+                        a = _transformation_servers[i].get()[0].get()
+                        b = _transformation_servers[i].get()[1].get()
+                        c = _transformation_servers[i].get()[2].get()
+                        d = _transformation_servers[i].get()[3].get()
+                        e = _transformation_servers[i].get()[4].get()
+                        f = _transformation_servers[i].get()[5].get()
+                        p = _transformation_servers[i].get()[6].get()
+                        transformation_cards.append(
+                            FractalDesigner.transformation_card(f"transformation_{i}", i, a, b, c, d, e, f, p)
+                        )
+                    remove_transformation_servers()
+                    return transformation_cards
+            elif input.add_transformation() > self.num_added:
+                if _num_transformations == 0:
+                    transformation_cards.append(FractalDesigner.transformation_card("transformation_0", 0))
+                else:
+                    for i in range(_num_transformations):
+                        a = _transformation_servers[i].get()[0].get()
+                        b = _transformation_servers[i].get()[1].get()
+                        c = _transformation_servers[i].get()[2].get()
+                        d = _transformation_servers[i].get()[3].get()
+                        e = _transformation_servers[i].get()[4].get()
+                        f = _transformation_servers[i].get()[5].get()
+                        p = _transformation_servers[i].get()[6].get()
+                        transformation_cards.append(
+                            FractalDesigner.transformation_card(f"transformation_{i}", i, a, b, c, d, e, f, p)
+                        )
+
                     transformation_cards.append(
-                        FractalDesigner.transformation_card(f"transformation_{i}", i, a, b, c, d, e, f, p)
+                        FractalDesigner.transformation_card(f"transformation_{_num_transformations}", _num_transformations)
                     )
 
-                transformation_cards.append(
-                    FractalDesigner.transformation_card(f"transformation_{_num_transformations}", _num_transformations)
-                )
+                self.num_transformations.set(_num_transformations + 1)
+                create_transformation_servers()
+                return transformation_cards
 
-            self.num_transformations.set(_num_transformations + 1)
-            return transformation_cards
-
-        @reactive.effect
+        @reactive.calc
         def create_transformation_servers():
             _num_transformations = self.num_transformations.get()
             _transformation_servers = self.transformation_servers.get()
@@ -303,6 +348,17 @@ class FractalDesigner:
                     FractalDesigner.transformation_server(f"transformation_{_num_transformations - 1}")
                 )
                 self.transformation_servers.set(_transformation_servers)
+                self.num_added += 1
+
+        @reactive.calc
+        def remove_transformation_servers():
+            _num_transformations = self.num_transformations.get()
+            _transformation_servers = self.transformation_servers.get()
+            if _num_transformations > 0:
+                _transformation_servers.pop()
+            self.transformation_servers.set(_transformation_servers)
+            self.num_transformations.set(_num_transformations - 1)
+            self.num_removed += 1
 
     def get_server(self) -> Callable[[Inputs, Outputs, Session], None]:
         return self.server
