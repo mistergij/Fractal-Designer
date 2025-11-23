@@ -2,7 +2,8 @@
 Program to interactively display and edit fractals. All python code was designed by Alexander Kral, with the
 mathematical algorithm for random iteration adapted from "Fractals Everywhere" to enable specifying
 probabilities (Barnsley, 1993, pp. 89-90). app.css and app.js were also designed by Alexander Kral, but
-katex.css, katex.js, and auto-render.js are open-source libraries incorporated for aesthetic purposes.
+katex.css, katex.js, auto-render.js, and jquery are open-source libraries incorporated for aesthetic and
+manipulation purposes.
 Author: Alexander Kral
 """
 
@@ -37,6 +38,11 @@ class FractalDesigner:
                 width=500,
             ),
             ui.head_content(
+                ui.tags.script(
+                    src="https://code.jquery.com/jquery-3.7.1.min.js",
+                    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=",
+                    crossorigin="anonymous"
+                ),
                 ui.tags.script(
                     src="https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.js",
                     integrity="sha256-4O4pS1SH31ZqrSO2A/2QJTVjTPqVe+jnYgOWUVr7EEc=",
@@ -112,6 +118,7 @@ class FractalDesigner:
         e: float = 0,
         f: float = 0,
         p: float = 0,
+        hide_p: bool = True
     ) -> ui.Tag:
         return ui.card(
             ui.div(f"Transformation {transformation_num}", class_="card-title"),
@@ -206,10 +213,10 @@ class FractalDesigner:
                         width="10ch",
                     ),
                     class_="input-p",
-                ),
+                ).add_style("display: none;" if hide_p else "display: block;"),
                 class_="matrix",
             ),
-            style="max-width: 25em",
+            style="max-width: 20em;" if hide_p else "max-width: 25em;",
             id="transformation",
         ).add_class("wrapper")
 
@@ -409,6 +416,7 @@ class FractalDesigner:
             _transformation_servers = self.transformation_servers.get()
 
             transformation_cards: list[ui.Tag] = []
+            hide_p = True if input.radio_mode.get() == "discrete" else False
 
             if input.remove_transformation() > self.num_removed:
                 if _num_transformations > 0:
@@ -421,13 +429,13 @@ class FractalDesigner:
                         f = _transformation_servers[i].get()[5].get()
                         p = _transformation_servers[i].get()[6].get()
                         transformation_cards.append(
-                            FractalDesigner.transformation_card(f"transformation_{i}", i, a, b, c, d, e, f, p)
+                            FractalDesigner.transformation_card(f"transformation_{i}", i, a, b, c, d, e, f, p, hide_p)
                         )
                     remove_transformation_servers()
                     return transformation_cards
             elif input.add_transformation() > self.num_added:
                 if _num_transformations == 0:
-                    transformation_cards.append(FractalDesigner.transformation_card("transformation_0", 0))
+                    transformation_cards.append(FractalDesigner.transformation_card("transformation_0", 0, hide_p=hide_p))
                 else:
                     for i in range(_num_transformations):
                         a = _transformation_servers[i].get()[0].get()
@@ -438,11 +446,11 @@ class FractalDesigner:
                         f = _transformation_servers[i].get()[5].get()
                         p = _transformation_servers[i].get()[6].get()
                         transformation_cards.append(
-                            FractalDesigner.transformation_card(f"transformation_{i}", i, a, b, c, d, e, f, p)
+                            FractalDesigner.transformation_card(f"transformation_{i}", i, a, b, c, d, e, f, p, hide_p)
                         )
 
                     transformation_cards.append(
-                        self.transformation_card(f"transformation_{_num_transformations}", _num_transformations)
+                        self.transformation_card(f"transformation_{_num_transformations}", _num_transformations, hide_p=hide_p)
                     )
 
                 self.num_transformations.set(_num_transformations + 1)
