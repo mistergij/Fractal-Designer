@@ -506,6 +506,27 @@ class FractalDesigner:
                     transformation_cards.append(
                         FractalDesigner.transformation_card("transformation_2", 2, e=0.5, hide_p=True)
                     )
+                    ui.update_numeric(id="iterations_discrete", value=3)
+                    return transformation_cards
+                elif input.preset() == "fern":
+                    self.transformation_servers.set(
+                        [FractalDesigner.transformation_server(f"transformation_{i}") for i in range(4)]
+                    )
+                    ui.update_radio_buttons(id="radio_mode", selected="continuous")
+                    self.num_transformations.set(4)
+                    transformation_cards.append(
+                        FractalDesigner.transformation_card("transformation_0", 0, 0, 0, 0, 0.16, p=0.01, hide_p=False)
+                    )
+                    transformation_cards.append(
+                        FractalDesigner.transformation_card("transformation_1", 1, 0.85, 0.04, -0.04, 0.85, f=1.6, p=0.85, hide_p=False)
+                    )
+                    transformation_cards.append(
+                        FractalDesigner.transformation_card("transformation_2", 2, 0.2, -0.26, 0.23, 0.22, f=1.6, p=0.07, hide_p=False)
+                    )
+                    transformation_cards.append(
+                        FractalDesigner.transformation_card("transformation_3", 3, -0.15, 0.28, 0.26, 0.24, f=0.44, p=0.07, hide_p=False)
+                    )
+                    ui.update_numeric(id="iterations_continuous", value=2500)
                     return transformation_cards
 
         @reactive.calc
