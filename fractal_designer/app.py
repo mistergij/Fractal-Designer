@@ -95,6 +95,15 @@ class FractalDesigner:
                 ui.input_action_button("graph_transformations", "Graph Transformations").add_class("main-display"),
                 class_="main-display",
             ),
+            ui.div(
+                ui.input_select(
+                    "preset",
+                    "Preset Fractals:",
+                    {"Discrete": {"triangle": "Sierpiński triangle"}, "Random": {"fern": "Fern"}},
+                ),
+                class_="main-display",
+            ),
+            ui.div(ui.input_action_button("graph_preset", "Show Preset"), class_="main-display"),
         )
 
         self.num_transformations: reactive.Value[int] = reactive.value(0)
@@ -103,6 +112,7 @@ class FractalDesigner:
         )
         self.num_added = 0
         self.num_removed = 0
+        self.num_preset = 0
 
     min_transformation = -2.00
     max_transformation = 2.00
@@ -291,7 +301,7 @@ class FractalDesigner:
                         ]
                     )
                 )
-            
+
             try:
                 if input.radio_mode.get() == "discrete":
                     old_points: list[tuple[int, NDArrayFloat32]] = [
@@ -300,7 +310,7 @@ class FractalDesigner:
 
                     if input.iterations_discrete() > 8:
                         raise TypeError
-            
+
                     for _ in range(input.iterations_discrete()):
                         new_points = []
                         for polygon in old_points:
@@ -340,7 +350,7 @@ class FractalDesigner:
                         new_points.append((transformation_idx, point))
             except TypeError:
                 m = ui.modal(
-                    f"The number of iterations is invalid. Valid values are numbers that range between 1 and {8 if input.radio_mode.get() == "discrete" else 5000}",
+                    f"The number of iterations is invalid. Valid values are numbers that range between 1 and {8 if input.radio_mode.get() == 'discrete' else 5000}",
                     title="Type Error",
                     easy_close=True,
                 )
@@ -432,7 +442,7 @@ class FractalDesigner:
                     )
 
         @render.ui
-        @reactive.event(input.add_transformation, input.remove_transformation)
+        @reactive.event(input.add_transformation, input.remove_transformation, input.graph_preset)
         def create_transformation():
             _num_transformations = self.num_transformations.get()
             _transformation_servers = self.transformation_servers.get()
@@ -482,6 +492,21 @@ class FractalDesigner:
                 self.num_transformations.set(_num_transformations + 1)
                 create_transformation_servers()
                 return transformation_cards
+            elif input.graph_preset() > self.num_preset:
+                if input.preset() == "triangle":
+                    self.transformation_servers.set(
+                        [FractalDesigner.transformation_server(f"transformation_{i}") for i in range(3)]
+                    )
+                    ui.update_radio_buttons(id="radio_mode", selected="discrete")
+                    self.num_transformations.set(3)
+                    transformation_cards.append(FractalDesigner.transformation_card("transformation_0", 0, hide_p=True))
+                    transformation_cards.append(
+                        FractalDesigner.transformation_card("transformation_1", 1, e=0.25, f=0.5, hide_p=True)
+                    )
+                    transformation_cards.append(
+                        FractalDesigner.transformation_card("transformation_2", 2, e=0.5, hide_p=True)
+                    )
+                    return transformation_cards
 
         @reactive.calc
         def create_transformation_servers():
