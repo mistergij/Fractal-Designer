@@ -3,7 +3,7 @@
 .envrc
 *.iml
 *.xml
-__pycache__/*
+__pycache__/
 .idea/vcs.xml
 *.cpython-313.pyc
 nohup.out
