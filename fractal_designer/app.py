@@ -8,15 +8,17 @@ Author: Alexander Kral
 """
 
 import random
+import sys
+import threading
 from typing import Callable
 
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-
-from shiny import App, Inputs, Outputs, Session, module, reactive, render, ui
+from main import MainWindow
+from PySide6.QtWidgets import QApplication
+from shiny import App, Inputs, Outputs, Session, module, reactive, render, run_app, ui
 from shinywidgets import output_widget, render_widget
-
 
 NDArrayFloat32 = np.typing.NDArray[np.float32]
 
@@ -518,13 +520,19 @@ class FractalDesigner:
                         FractalDesigner.transformation_card("transformation_0", 0, 0, 0, 0, 0.16, p=0.01, hide_p=False)
                     )
                     transformation_cards.append(
-                        FractalDesigner.transformation_card("transformation_1", 1, 0.85, 0.04, -0.04, 0.85, f=1.6, p=0.85, hide_p=False)
+                        FractalDesigner.transformation_card(
+                            "transformation_1", 1, 0.85, 0.04, -0.04, 0.85, f=1.6, p=0.85, hide_p=False
+                        )
                     )
                     transformation_cards.append(
-                        FractalDesigner.transformation_card("transformation_2", 2, 0.2, -0.26, 0.23, 0.22, f=1.6, p=0.07, hide_p=False)
+                        FractalDesigner.transformation_card(
+                            "transformation_2", 2, 0.2, -0.26, 0.23, 0.22, f=1.6, p=0.07, hide_p=False
+                        )
                     )
                     transformation_cards.append(
-                        FractalDesigner.transformation_card("transformation_3", 3, -0.15, 0.28, 0.26, 0.24, f=0.44, p=0.07, hide_p=False)
+                        FractalDesigner.transformation_card(
+                            "transformation_3", 3, -0.15, 0.28, 0.26, 0.24, f=0.44, p=0.07, hide_p=False
+                        )
                     )
                     ui.update_numeric(id="iterations_continuous", value=2500)
                     return transformation_cards
@@ -559,3 +567,14 @@ class FractalDesigner:
 
 designer = FractalDesigner()
 app = App(designer.get_ui(), designer.get_server())
+
+
+server_thread = threading.Thread(target=run_app, args=[app], daemon=True)
+
+server_thread.start()
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+
+    sys.exit(app.exec())
