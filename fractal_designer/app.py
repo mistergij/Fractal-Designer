@@ -508,7 +508,7 @@ class FractalDesigner:
                     transformation_cards.append(
                         FractalDesigner.transformation_card("transformation_2", 2, e=0.5, hide_p=True)
                     )
-                    ui.update_numeric(id="iterations_discrete", value=3)
+                    ui.update_numeric(id="iterations_discrete", value=5)
                     return transformation_cards
                 elif input.preset() == "fern":
                     self.transformation_servers.set(
